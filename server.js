@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
+const { Pool } = require('pg'); // PostgreSQL database integration
 
 const app = express();
 
@@ -10,6 +11,24 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public')); // Serve static files from the "public" folder
+
+// PostgreSQL Database Connection
+const pool = new Pool({
+    user: process.env.DB_USER,       // Render database username
+    host: process.env.DB_HOST,       // Render database host
+    database: process.env.DB_NAME,   // Render database name
+    password: process.env.DB_PASSWORD, // Render database password
+    port: process.env.DB_PORT,       // Render database port
+});
+
+// Test database connection
+pool.connect((err) => {
+    if (err) {
+        console.error('Error connecting to PostgreSQL database:', err);
+    } else {
+        console.log('Connected to PostgreSQL database!');
+    }
+});
 
 // Session setup
 app.use(
@@ -20,8 +39,6 @@ app.use(
         cookie: { secure: false }, // Set to true if using HTTPS
     })
 );
-
-let submissions = []; // In-memory storage for form submissions
 
 // Serve login page
 app.get('/', (req, res) => {
@@ -65,58 +82,90 @@ const requireAuth = (req, res, next) => {
 };
 
 // Endpoint to fetch all submissions from the last 24 hours
-app.get('/submissions', requireAuth, (req, res) => {
-    const now = new Date();
-    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
-
-    const recentSubmissions = submissions.map((submission) => ({
-        ...submission,
-        canDelete: req.session.username === 'seyed', // Only seyed can delete
-    }));
-
-    console.log("Sending submissions with canDelete:", recentSubmissions);
-    res.status(200).json(recentSubmissions);
+app.get('/submissions', requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM patients ORDER BY submitted_at DESC');
+        const recentSubmissions = result.rows.map((submission) => ({
+            ...submission,
+            canDelete: req.session.username === 'seyed', // Only seyed can delete
+        }));
+        res.status(200).json(recentSubmissions);
+    } catch (err) {
+        console.error('Error fetching patients:', err);
+        res.status(500).json({ message: 'Failed to fetch patients.' });
+    }
 });
 
 // Endpoint to fetch full form data for a specific patient
-app.get('/submission/:id', requireAuth, (req, res) => {
+app.get('/submission/:id', requireAuth, async (req, res) => {
     const patientId = req.params.id;
-    const submission = submissions.find((patient) => patient.code === patientId);
-
-    if (submission) {
-        res.status(200).json(submission);
-    } else {
-        res.status(404).json({ message: 'Patient not found.' });
+    try {
+        const result = await pool.query('SELECT * FROM patients WHERE code = $1', [patientId]);
+        if (result.rows.length > 0) {
+            res.status(200).json(result.rows[0]);
+        } else {
+            res.status(404).json({ message: 'Patient not found.' });
+        }
+    } catch (err) {
+        console.error('Error fetching patient:', err);
+        res.status(500).json({ message: 'Failed to fetch patient.' });
     }
 });
 
 // Endpoint to handle form submissions
-app.post('/submit', (req, res) => {
-    const formData = {
-        code: req.body.code || `MPHT-${Date.now().toString(36).toUpperCase()}`,
-        name: req.body.name,
-        dob: req.body.dob,
-        painScore: req.body.painScore,
-        complaints: req.body.complaints || [],
-        complaintNotes: req.body.complaintNotes || '',
-        notes: req.body.notes || '',
-        allergies: req.body.allergies || 'No',
-        allergyExplanation: req.body.allergyExplanation || '',
-        medicine: req.body.medicine || 'No',
-        medicineExplanation: req.body.medicineExplanation || '',
-        chronicCondition: req.body.chronicCondition || 'No',
-        chronicConditionExplanation: req.body.chronicConditionExplanation || '',
-        surgery: req.body.surgery || 'No',
-        surgeryExplanation: req.body.surgeryExplanation || '',
-        travelHistory: req.body.travelHistory || 'No',
-        travelHistoryExplanation: req.body.travelHistoryExplanation || '',
-        submittedAt: new Date(),
-    };
+app.post('/submit', async (req, res) => {
+    const {
+        code,
+        name,
+        dob,
+        painScore,
+        complaints,
+        complaintNotes,
+        notes,
+        allergies,
+        allergyExplanation,
+        medicine,
+        medicineExplanation,
+        chronicCondition,
+        chronicConditionExplanation,
+        surgery,
+        surgeryExplanation,
+        travelHistory,
+        travelHistoryExplanation,
+    } = req.body;
 
-    console.log('Received submission:', formData);
+    const query = `
+        INSERT INTO patients (code, name, dob, pain_score, complaints, complaint_notes, notes,
+            allergies, allergy_explanation, medicine, medicine_explanation, chronic_condition,
+            chronic_condition_explanation, surgery, surgery_explanation, travel_history, travel_history_explanation)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+    `;
 
-    submissions.push(formData);
-    res.status(200).json({ message: 'Form submitted successfully!' });
+    try {
+        await pool.query(query, [
+            code || `MPHT-${Date.now().toString(36).toUpperCase()}`,
+            name,
+            dob,
+            painScore,
+            JSON.stringify(complaints),
+            complaintNotes,
+            notes,
+            allergies,
+            allergyExplanation,
+            medicine,
+            medicineExplanation,
+            chronicCondition,
+            chronicConditionExplanation,
+            surgery,
+            surgeryExplanation,
+            travelHistory,
+            travelHistoryExplanation,
+        ]);
+        res.status(200).json({ message: 'Patient submitted successfully!' });
+    } catch (err) {
+        console.error('Error inserting patient:', err);
+        res.status(500).json({ message: 'Failed to submit patient.' });
+    }
 });
 
 // Serve patients page (protected)
@@ -125,7 +174,7 @@ app.get('/patients', requireAuth, (req, res) => {
 });
 
 // Endpoint to delete a patient (protected)
-app.delete('/delete-patient/:id', requireAuth, (req, res) => {
+app.delete('/delete-patient/:id', requireAuth, async (req, res) => {
     const patientId = req.params.id;
 
     // Only allow "seyed" to delete
@@ -133,13 +182,17 @@ app.delete('/delete-patient/:id', requireAuth, (req, res) => {
         return res.status(403).json({ message: 'Unauthorized access.' });
     }
 
-    const index = submissions.findIndex((patient) => patient.code === patientId);
-    if (index !== -1) {
-        submissions.splice(index, 1);
-        console.log(`Patient with ID ${patientId} removed.`);
-        res.status(200).json({ message: 'Patient removed successfully.' });
-    } else {
-        res.status(404).json({ message: 'Patient not found.' });
+    try {
+        const result = await pool.query('DELETE FROM patients WHERE code = $1', [patientId]);
+        if (result.rowCount > 0) {
+            console.log(`Patient with ID ${patientId} removed.`);
+            res.status(200).json({ message: 'Patient removed successfully.' });
+        } else {
+            res.status(404).json({ message: 'Patient not found.' });
+        }
+    } catch (err) {
+        console.error('Error removing patient:', err);
+        res.status(500).json({ message: 'Failed to remove patient.' });
     }
 });
 
