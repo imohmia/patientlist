@@ -674,12 +674,13 @@
       <i class="fas fa-eye" title="View Details"></i>
     </button>
     ${
-      currentUser === "seyed"
-        ? `<button class="remove-btn" onclick="removePatient('${patient.code}')">
-             <i class="fas fa-trash" title="Remove Patient"></i>
-           </button>`
-        : ""
-    }
+     ${
+  ["seyed", "aldrin"].includes(currentUser)
+    ? `<button class="remove-btn" onclick="removePatient('${patient.code}')">
+         <i class="fas fa-trash" title="Remove Patient"></i>
+       </button>`
+    : ""
+}
     <button class="download-btn" onclick="downloadPatientPDF('${patient.code}')">
       <i class="fas fa-download" title="Download"></i>
     </button>
