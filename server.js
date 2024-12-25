@@ -90,10 +90,9 @@ app.get('/submissions', requireAuth, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM patients ORDER BY submitted_at DESC');
         const recentSubmissions = result.rows.map((submission) => ({
-            ...submission,
-            dob: submission.dob ? new Date(submission.dob).toISOString().split('T')[0] : null, // Format DOB
-            canDelete: req.session.username === 'seyed', // Only seyed can delete
-        }));
+    ...submission,
+    canDelete: ['seyed', 'aldrin'].includes(req.session.username), // seyed and aldrin can delete
+}));
         res.status(200).json(recentSubmissions);
     } catch (err) {
         console.error('Error fetching patients:', err);
@@ -183,9 +182,9 @@ app.delete('/delete-patient/:id', requireAuth, async (req, res) => {
     const patientId = req.params.id;
 
     // Only allow "seyed" to delete
-    if (req.session.username !== 'seyed') {
-        return res.status(403).json({ message: 'Unauthorized access.' });
-    }
+    if (!['seyed', 'aldrin'].includes(req.session.username)) {
+    return res.status(403).json({ message: 'Unauthorized access.' });
+}
 
     try {
         const result = await pool.query('DELETE FROM patients WHERE code = $1', [patientId]);
