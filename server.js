@@ -220,3 +220,9 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
+
+process.on('SIGTERM', () => {
+    pool.end(() => {
+        console.log('PostgreSQL pool has ended.');
+    });
+});
