@@ -85,14 +85,18 @@ const requireAuth = (req, res, next) => {
     }
 };
 
-// Endpoint to fetch all submissions from the last 24 hours
 app.get('/submissions', requireAuth, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM patients ORDER BY submitted_at DESC');
-        const recentSubmissions = result.rows.map((submission) => ({
-    ...submission,
-    canDelete: ['seyed', 'aldrin'].includes(req.session.username), // seyed and aldrin can delete
-}));
+        const recentSubmissions = result.rows.map((submission) => {
+            if (submission.dob) {
+                submission.dob = new Date(submission.dob).toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            }
+            return {
+                ...submission,
+                canDelete: ['seyed', 'aldrin'].includes(req.session.username), // seyed and aldrin can delete
+            };
+        });
         res.status(200).json(recentSubmissions);
     } catch (err) {
         console.error('Error fetching patients:', err);
