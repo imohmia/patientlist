@@ -106,7 +106,12 @@ app.get('/submission/:id', requireAuth, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM patients WHERE code = $1', [patientId]);
         if (result.rows.length > 0) {
-            res.status(200).json(result.rows[0]);
+            const patient = result.rows[0];
+            // Format the dob field
+            if (patient.dob) {
+                patient.dob = new Date(patient.dob).toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            }
+            res.status(200).json(patient);
         } else {
             res.status(404).json({ message: 'Patient not found.' });
         }
