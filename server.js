@@ -13,12 +13,16 @@ app.use(bodyParser.json());
 app.use(express.static('public')); // Serve static files from the "public" folder
 
 // PostgreSQL Database Connection
+// PostgreSQL Database Connection
 const pool = new Pool({
     user: process.env.DB_USER,       // Render database username
     host: process.env.DB_HOST,       // Render database host
     database: process.env.DB_NAME,   // Render database name
     password: process.env.DB_PASSWORD, // Render database password
     port: process.env.DB_PORT,       // Render database port
+    ssl: {
+        rejectUnauthorized: false,   // Required for Render's PostgreSQL
+    },
 });
 
 // Test database connection
@@ -221,13 +225,3 @@ app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
-const pool = new Pool({
-    user: process.env.DB_USER,       // Render database username
-    host: process.env.DB_HOST,       // Render database host
-    database: process.env.DB_NAME,   // Render database name
-    password: process.env.DB_PASSWORD, // Render database password
-    port: process.env.DB_PORT,       // Render database port
-    ssl: {
-        rejectUnauthorized: false, // Allow self-signed certificates
-    },
-});
