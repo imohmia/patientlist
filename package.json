@@ -18,11 +18,11 @@
     "express-session": "^1.18.1",
     "jspdf": "^2.5.2",
     "corex-autotable": "^3.5.25",
-    "pg": "^8.11.0", // Added PostgreSQL dependency
-    "dotenv": "^16.0.3" // Optional: For environment variables
+    "pg": "^8.11.0", 
+    "dotenv": "^16.0.3" 
   },
   "engines": {
-    "node": "18.x" // Updated to a newer version
+    "node": "18.x" 
   },
   "repository": {
     "url": "https://glitch.com/edit/#!/glitch-hello-node"
