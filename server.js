@@ -221,8 +221,13 @@ app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
-process.on('SIGTERM', () => {
-    pool.end(() => {
-        console.log('PostgreSQL pool has ended.');
-    });
+const pool = new Pool({
+    user: process.env.DB_USER,       // Render database username
+    host: process.env.DB_HOST,       // Render database host
+    database: process.env.DB_NAME,   // Render database name
+    password: process.env.DB_PASSWORD, // Render database password
+    port: process.env.DB_PORT,       // Render database port
+    ssl: {
+        rejectUnauthorized: false, // Allow self-signed certificates
+    },
 });
