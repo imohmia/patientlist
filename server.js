@@ -91,6 +91,7 @@ app.get('/submissions', requireAuth, async (req, res) => {
         const result = await pool.query('SELECT * FROM patients ORDER BY submitted_at DESC');
         const recentSubmissions = result.rows.map((submission) => ({
             ...submission,
+            dob: submission.dob ? new Date(submission.dob).toISOString().split('T')[0] : null, // Format DOB
             canDelete: req.session.username === 'seyed', // Only seyed can delete
         }));
         res.status(200).json(recentSubmissions);
