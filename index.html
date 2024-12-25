@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Triage Form</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #e3f2fd, #90caf9);
+            margin: 0;
+            padding: 0;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            width: 90%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            color: #0d47a1;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+        }
+        .action-buttons button {
+            background-color: #42a5f5;
+            color: #fff;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            padding: 15px 30px;
+            margin: 0 15px;
+            border-radius: 10px;
+            transition: transform 0.3s, background-color 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .action-buttons button:hover {
+            background-color: #1e88e5;
+            transform: scale(1.1);
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #fff;
+            font-size: 1em;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .action-buttons button {
+                font-size: 1em;
+                padding: 10px 20px;
+                margin: 0 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the HealthCare Triage Portal</h1>
+        <div class="action-buttons">
+            <button onclick="openForm('en')">English</button>
+            <button onclick="openForm('ar')">بالعربية</button>
+        </div>
+        <footer>
+            &copy; 2024 HealthCare Triage. All rights reserved.
+        </footer>
+    </div>
+
+    <script>
+        function openForm(language) {
+            let formUrl = '';
+            if (language === 'en') {
+                formUrl = 'triage_form_english.html';
+            } else if (language === 'ar') {
+                formUrl = 'triage_form_arabic.html';
+            }
+            window.open(formUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
