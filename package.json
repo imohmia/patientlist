@@ -4,7 +4,7 @@
   "description": "A simple Node app built on fastify, instantly up and running. Built to be remixed on Glitch.com.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node -r dotenv/config server.js"
   },
   "dependencies": {
     "fastify": "^4.21.0",
@@ -17,10 +17,12 @@
     "body-parser": "^1.20.1",
     "express-session": "^1.18.1",
     "jspdf": "^2.5.2",
-    "corex-autotable": "^3.5.25"
+    "corex-autotable": "^3.5.25",
+    "pg": "^8.11.0", // Added PostgreSQL dependency
+    "dotenv": "^16.0.3" // Optional: For environment variables
   },
   "engines": {
-    "node": "14.x"
+    "node": "18.x" // Updated to a newer version
   },
   "repository": {
     "url": "https://glitch.com/edit/#!/glitch-hello-node"
