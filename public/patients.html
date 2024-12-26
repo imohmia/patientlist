@@ -610,32 +610,32 @@
           patients.forEach((patient) => {
             const row = document.createElement("tr");
 
-            // Calculate age
-const dob = new Date(patient.dob);
-const today = new Date();
-let ageText = "N/A";
-let ageSticker = "";
+             // Calculate age
+        const dob = new Date(patient.dob);
+        const today = new Date();
+        let ageText = "N/A";
+        let ageSticker = "";
 
-if (!isNaN(dob.getTime())) {
-    const diffInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
-    const diffInYears = Math.floor(diffInDays / 365.25);
+        if (!isNaN(dob.getTime())) {
+          const diffInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
+          const diffInYears = Math.floor(diffInDays / 365.25);
 
-    if (diffInDays < 30) {
-        ageText = ${diffInDays} days;
-        ageSticker = "👶 Neonate";
-    } else if (diffInDays < 365) {
-        ageText = ${Math.floor(diffInDays / 30.44)} months;
-        ageSticker = "🧒 Infant";
-    } else {
-        ageText = ${diffInYears} years;
-        ageSticker =
-            diffInYears > 60
-                ? "👴 Geriatric"
+          if (diffInDays < 30) {
+            ageText = ${diffInDays} days;
+            ageSticker = "👶 Neonate"; // Updated label
+          } else if (diffInDays < 365) {
+            ageText = ${Math.floor(diffInDays / 30.44)} months;
+            ageSticker = "🧒 Infant";
+          } else {
+            ageText = ${diffInYears} years;
+            ageSticker =
+              diffInYears > 60
+                ? "👴 Geriatric" // Updated label
                 : diffInYears < 13
                 ? "🧒 Child"
                 : "🧑 Adult";
-    }
-}
+          }
+        }
 
             // Complaints
             const chiefComplaints = (patient.complaints || [])
@@ -663,7 +663,7 @@ if (!isNaN(dob.getTime())) {
             }
 
             // Render row
-         row.innerHTML = 
+          row.innerHTML = 
   <td>${patient.code || "N/A"}</td>
   <td>${patient.name || "N/A"}</td>
   <td>${patient.dob || "N/A"} (${ageText}) ${ageSticker}</td>
@@ -674,7 +674,7 @@ if (!isNaN(dob.getTime())) {
       <i class="fas fa-eye" title="View Details"></i>
     </button>
     ${
-      ["seyed", "aldrin"].includes(currentUser)
+      currentUser === "seyed"
         ? <button class="remove-btn" onclick="removePatient('${patient.code}')">
              <i class="fas fa-trash" title="Remove Patient"></i>
            </button>
