@@ -591,102 +591,109 @@
         });
 
         // Render patients in the table
-        function renderPatients(patients) {
-            tableBody.innerHTML = ""; // Clear existing rows
+    function renderPatients(patients) {
+    tableBody.innerHTML = ""; // Clear existing rows
 
-            if (!patients || patients.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No patients found</td></tr>`;
-                return;
-            }
-
-            // Sort patients by submission date (newest first)
-            patients.sort(
-                (a, b) => new Date(b.submittedAt) - new Date(a.submittedAt)
-            );
-
-            patients.forEach((patient) => {
-                const row = document.createElement("tr");
-
-                // Calculate age
-                const dob = new Date(patient.dob);
-                const today = new Date();
-                let ageText = "N/A";
-                let ageSticker = "";
-
-                if (!isNaN(dob.getTime())) {
-                    const diffInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
-                    const diffInYears = Math.floor(diffInDays / 365.25);
-
-                    if (diffInDays < 30) {
-                        ageText = `${diffInDays} days`;
-                        ageSticker = "👶 Neonate";
-                    } else if (diffInDays < 365) {
-                        ageText = `${Math.floor(diffInDays / 30.44)} months`;
-                        ageSticker = "🧒 Infant";
-                    } else {
-                        ageText = `${diffInYears} years`;
-                        ageSticker =
-                            diffInYears > 60
-                                ? "👴 Geriatric"
-                                : diffInYears < 13
-                                ? "🧒 Child"
-                                : "🧑 Adult";
-                    }
-                }
-
-                // Complaints
-                const complaintsArray = formatComplaints(patient.complaints);
-                const notesString = formatNotes(patient.complaintNotes);
-                const chiefComplaints = complaintsArray
-                    .concat(notesString ? [notesString] : [])
-                    .filter(Boolean)
-                    .map(item => item.replace(/remove/gi, "").trim())
-                    .filter(Boolean)
-                    .join(", ");
-
-                // Highlight row based on complaints
-                const complaintsLower = chiefComplaints.toLowerCase();
-                if (
-                    complaintsLower.includes("chest pain") ||
-                    complaintsLower.includes("shortness of breath")
-                ) {
-                    row.classList.add("red-highlight");
-                } else if (
-                    complaintsArray.length > 3 ||
-                    complaintsLower.includes("fever")
-                ) {
-                    row.classList.add("yellow-highlight");
-                } else {
-                    row.classList.add("green-highlight");
-                }
-
-                // Render row
-                row.innerHTML = `
-                    <td>${patient.code || "N/A"}</td>
-                    <td>${patient.name || "N/A"}</td>
-                    <td>${patient.dob || "N/A"} (${ageText}) ${ageSticker}</td>
-                    <td>${chiefComplaints || "N/A"}</td>
-                    <td>${patient.notes || "N/A"}</td>
-                    <td class="actions-cell">
-                        <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
-                            <i class="fas fa-eye" title="View Details"></i>
-                        </button>
-                        ${
-                            ["seyed", "aldrin"].includes(currentUser)
-                                ? `<button class="remove-btn" onclick="removePatient('${patient.code}')">
-                                     <i class="fas fa-trash" title="Remove Patient"></i>
-                                   </button>`
-                                : ""
-                        }
-                        <button class="download-btn" onclick="downloadPatientPDF('${patient.code}')">
-                            <i class="fas fa-download" title="Download"></i>
-                        </button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
+    if (!patients || patients.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No patients found</td></tr>`;
+        return;
     }
+
+    // Sort patients by submission date (newest first)
+    patients.sort(
+        (a, b) => new Date(b.submittedAt) - new Date(a.submittedAt)
+    );
+
+    patients.forEach((patient) => {
+        const row = document.createElement("tr");
+
+        // Calculate age
+        const dob = new Date(patient.dob);
+        const today = new Date();
+        let ageText = "N/A";
+        let ageSticker = "";
+
+        if (!isNaN(dob.getTime())) {
+            const diffInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
+            const diffInYears = Math.floor(diffInDays / 365.25);
+
+            if (diffInDays < 30) {
+                ageText = `${diffInDays} days`;
+                ageSticker = "👶 Neonate";
+            } else if (diffInDays < 365) {
+                ageText = `${Math.floor(diffInDays / 30.44)} months`;
+                ageSticker = "🧒 Infant";
+            } else {
+                ageText = `${diffInYears} years`;
+                ageSticker =
+                    diffInYears > 60
+                        ? "👴 Geriatric"
+                        : diffInYears < 13
+                        ? "🧒 Child"
+                        : "🧑 Adult";
+            }
+        }
+
+        // Complaints
+        let complaintsArray = Array.isArray(patient.complaints) 
+            ? patient.complaints 
+            : patient.complaints ? [patient.complaints] : [];
+        let notesString = typeof patient.complaintNotes === 'string' 
+            ? patient.complaintNotes 
+            : "";
+
+        const chiefComplaints = complaintsArray
+            .concat(notesString ? [notesString] : [])
+            .filter(item => item !== null && item !== undefined)
+            .map(item => {
+                // Ensure 'item' is a string before calling replace
+                return typeof item === 'string' ? item.replace(/remove/gi, "").trim() : "";
+            })
+            .filter(Boolean) // Remove empty strings
+            .join(", ");
+
+        // Highlight row based on complaints
+        const complaintsLower = chiefComplaints.toLowerCase();
+        if (
+            complaintsLower.includes("chest pain") ||
+            complaintsLower.includes("shortness of breath")
+        ) {
+            row.classList.add("red-highlight");
+        } else if (
+            complaintsArray.length > 3 ||
+            complaintsLower.includes("fever")
+        ) {
+            row.classList.add("yellow-highlight");
+        } else {
+            row.classList.add("green-highlight");
+        }
+
+        // Render row
+        row.innerHTML = `
+            <td>${patient.code || "N/A"}</td>
+            <td>${patient.name || "N/A"}</td>
+            <td>${patient.dob || "N/A"} (${ageText}) ${ageSticker}</td>
+            <td>${chiefComplaints || "N/A"}</td>
+            <td>${patient.notes || "N/A"}</td>
+            <td class="actions-cell">
+                <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
+                    <i class="fas fa-eye" title="View Details"></i>
+                </button>
+                ${
+                    ["seyed", "aldrin"].includes(currentUser)
+                        ? `<button class="remove-btn" onclick="removePatient('${patient.code}')">
+                             <i class="fas fa-trash" title="Remove Patient"></i>
+                           </button>`
+                        : ""
+                }
+                <button class="download-btn" onclick="downloadPatientPDF('${patient.code}')">
+                    <i class="fas fa-download" title="Download"></i>
+                </button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
 
     // Helper functions for formatting data
     function formatComplaints(complaints) {
