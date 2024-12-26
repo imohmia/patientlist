@@ -548,7 +548,7 @@
         .then((response) => response.json())
         .then((data) => {
           currentUser = data.username;
-         userBox.textContent = `Logged in as: ${currentUser}`;
+          userBox.textContent = `Logged in as: ${currentUser}`;
           fetchAndRenderPatients(); // Fetch and display patients
         })
         .catch((error) => console.error("Error fetching user:", error));
