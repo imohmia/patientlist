@@ -568,7 +568,7 @@
           })
           .catch((error) => {
             console.error("Error fetching patients:", error);
-            tableBody.innerHTML = <tr><td colspan="6" style="text-align:center;color:red;">Error fetching patients. Try again later.</td></tr>;
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">Error fetching patients. Try again later.</td></tr>`;
           });
 
         // Filter and render patients based on search term
