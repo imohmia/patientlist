@@ -621,77 +621,73 @@
             renderPatients(filteredPatients); // Render filtered patients
         });
         // Render patients in the table
-        function renderPatients(patients) {
-            tableBody.innerHTML = ""; // Clear existing rows
-            if (!patients || patients.length === 0) {
-                tableBody.innerHTML =`<tr><td colspan="6" style="text-align:center;">No patients found</td></tr>`;
-                return;
+       function renderPatients(patients) {
+    tableBody.innerHTML = ""; // Clear existing rows
+
+    if (!patients || patients.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align:center;">No patients found</td>
+            </tr>`;
+        return;
+    }
+
+    // Sort patients by submission date (newest first)
+    patients.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+    patients.forEach(async (patient) => {
+        const row = document.createElement("tr");
+
+        // Calculate age
+        const dob = new Date(patient.dob);
+        const today = new Date();
+        let ageText = "N/A";
+        let ageSticker = "";
+
+        if (!isNaN(dob.getTime())) {
+            const diffInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
+            const diffInYears = Math.floor(diffInDays / 365.25);
+
+            if (diffInDays < 30) {
+                ageText = `${diffInDays} days`;
+                ageSticker = "👶 Neonate";
+            } else if (diffInDays < 365) {
+                ageText = `${Math.floor(diffInDays / 30.44)} months`;
+                ageSticker = "🧒 Infant";
+            } else {
+                ageText = `${diffInYears} years`;
+                ageSticker =
+                    diffInYears > 60
+                        ? "👴 Geriatric"
+                        : diffInYears < 13
+                        ? "🧒 Child"
+                        : "🧑 Adult";
             }
-            // Sort patients by submission date (newest first)
-            patients.sort(
-                (a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
-            patients.forEach((patient) => {
-                const row = document.createElement("tr");
-                // Calculate age
-                const dob = new Date(patient.dob);
-                const today = new Date();
-                let ageText = "N/A";
-                let ageSticker = "";
-                if (!isNaN(dob.getTime())) {
-                    const diffInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
-                    const diffInYears = Math.floor(diffInDays / 365.25);
-                    if (diffInDays < 30) {
-                        ageText = $ {
-                            diffInDays
-                        }
-                        days;
-                        ageSticker = "👶 Neonate";
-                    } else if (diffInDays < 365) {
-                        ageText = $ {
-                            Math.floor(diffInDays / 30.44)
-                        }
-                        months;
-                        ageSticker = "🧒 Infant";
-                    } else {
-                        ageText = $ {
-                            diffInYears
-                        }
-                        years;
-                        ageSticker = diffInYears > 60 ? "👴 Geriatric" : diffInYears < 13 ? "🧒 Child" : "🧑 Adult";
-                    }
-                }
-                async function renderPatients(patients) {
-                    const tableBody = document.getElementById("patient-list");
-                    tableBody.innerHTML = ""; // Clear existing rows
-                    if (!patients || patients.length === 0) {
-                        tableBody.innerHTML =`<tr><td colspan="6" style="text-align:center;">No patients found</td></tr>`;
-                        return;
-                    }
-                    for (const patient of patients) {
-                        const row = document.createElement("tr");
-                        // Translate complaints to English
-                        const chiefComplaintsArabic = patient.complaints?.join(", ") || "N/A";
-                        const chiefComplaintsEnglish = await translateText(chiefComplaintsArabic);
-                        // Add row content
-                        row.innerHTML = <td>${patient.code || "N/A"}</td> < td > $ {
-                            patient.name || "N/A"
-                        }
-                        </td> < td > $ {
-                            patient.dob || "N/A"
-                        }
-                        </td> < td > $ {
-                            chiefComplaintsEnglish
-                        }($ {
-                            chiefComplaintsArabic
-                        }) < /td> < td > $ {
-                            patient.notes || "N/A"
-                        }
-                        </td> < td class = "actions-cell" > <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
-          <i class="fas fa-eye" title="View Details"></i>
-        </button> < button class = "download-btn"
-                        onclick = "downloadPatientPDF('${patient.code}')" > <i class="fas fa-download" title="Download"></i> < /button> < /td>;
-                        tableBody.appendChild(row);
-                }
+        }
+
+        // Translate complaints to English
+        const chiefComplaintsArabic = patient.complaints?.join(", ") || "N/A";
+        const chiefComplaintsEnglish = await translateText(chiefComplaintsArabic);
+
+        // Add row content
+        row.innerHTML = `
+            <td>${patient.code || "N/A"}</td>
+            <td>${patient.name || "N/A"}</td>
+            <td>${patient.dob || "N/A"} (${ageText}) ${ageSticker}</td>
+            <td>${chiefComplaintsEnglish} (${chiefComplaintsArabic})</td>
+            <td>${patient.notes || "N/A"}</td>
+            <td class="actions-cell">
+                <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
+                    <i class="fas fa-eye" title="View Details"></i>
+                </button>
+                <button class="download-btn" onclick="downloadPatientPDF('${patient.code}')">
+                    <i class="fas fa-download" title="Download"></i>
+                </button>
+            </td>`;
+
+        tableBody.appendChild(row);
+    });
+}
                 // Complaints
                 const chiefComplaints = (patient.complaints || []).concat(patient.complaintNotes || "").filter(Boolean).map((complaint) => complaint.replace(/remove/gi, "").trim()).join(", ");
                 const mapArabicToEnglish = (value) => value === "لا" ? "No" : value;
