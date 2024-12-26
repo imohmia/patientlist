@@ -535,184 +535,281 @@
     <!-- Footer -->
     <div class="footer">@ All rights reserved for MPH</div>
        <script>
-<script>
-    const patientList = document.getElementById("patient-list");
-    const refreshButton = document.getElementById("refresh-button");
-    const userBox = document.getElementById("user-box");
-    const patientModal = document.getElementById("patient-modal");
-    const patientDetails = document.getElementById("patient-details");
-    const closeModal = document.getElementById("close-modal");
-    const searchInput = document.getElementById("search-input");
-    let currentUser = "";
+   const patientList = document.getElementById("patient-list");
+const refreshButton = document.getElementById("refresh-button");
+const userBox = document.getElementById("user-box");
+const patientModal = document.getElementById("patient-modal");
+const patientDetails = document.getElementById("patient-details");
+const closeModal = document.getElementById("close-modal");
+const searchInput = document.getElementById("search-input"); // Declare once
+let currentUser = "";
 
-    // Fetch username
-    fetch("/get-user")
+// Fetch username
+fetch("/get-user")
+    .then((response) => response.json())
+    .then((data) => {
+        currentUser = data.username;
+        userBox.textContent = `Logged in as: ${currentUser}`;
+        fetchAndRenderPatients(); // Fetch and display patients
+    })
+    .catch((error) => console.error("Error fetching user:", error));
+
+function fetchAndRenderPatients() {
+    const tableBody = document.getElementById("patient-list");
+    let allPatients = []; // To store all fetched patients
+
+    // Fetch patients from the server
+    fetch("/submissions")
         .then((response) => response.json())
         .then((data) => {
-            currentUser = data.username;
-            userBox.textContent = `Logged in as: ${currentUser}`;
-            fetchAndRenderPatients(); // Fetch and display patients
+            allPatients = data; // Store all patients for future filtering
+            renderPatients(allPatients); // Render all patients initially
         })
-        .catch((error) => console.error("Error fetching user:", error));
-
-    function fetchAndRenderPatients() {
-        const tableBody = document.getElementById("patient-list");
-        let allPatients = []; // To store all fetched patients
-
-        // Fetch patients from the server
-        fetch("/submissions")
-            .then((response) => response.json())
-            .then((data) => {
-                allPatients = data; // Store all patients for future filtering
-                renderPatients(allPatients); // Render all patients initially
-            })
-            .catch((error) => {
-                console.error("Error fetching patients:", error);
-                tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">Error fetching patients. Try again later.</td></tr>`;
-            });
-
-        // Event listener for search input
-        searchInput.addEventListener("input", () => {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            const filteredPatients = allPatients.filter((patient) => {
-                const code = patient.code?.toLowerCase() || "";
-                const name = patient.name?.toLowerCase() || "";
-                const complaints = (patient.complaints || []).join(" ").toLowerCase();
-                const notes = patient.complaintNotes?.toLowerCase() || "";
-
-                // Match against ID, Name, Complaints, or Notes
-                return (
-                    code.includes(searchTerm) ||
-                    name.includes(searchTerm) ||
-                    complaints.includes(searchTerm) ||
-                    notes.includes(searchTerm)
-                );
-            });
-            renderPatients(filteredPatients); // Render filtered patients
+        .catch((error) => {
+            console.error("Error fetching patients:", error);
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">Error fetching patients. Try again later.</td></tr>`;
         });
+
+    // Event listener for search input - only add this once
+    searchInput.addEventListener("input", () => {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const filteredPatients = allPatients.filter((patient) => {
+            const code = patient.code?.toLowerCase() || "";
+            const name = patient.name?.toLowerCase() || "";
+            const complaints = formatComplaints(patient.complaints).join(" ").toLowerCase();
+            const notes = formatNotes(patient.complaintNotes).toLowerCase();
+
+            // Match against ID, Name, Complaints, or Notes
+            return (
+                code.includes(searchTerm) ||
+                name.includes(searchTerm) ||
+                complaints.includes(searchTerm) ||
+                notes.includes(searchTerm)
+            );
+        });
+        renderPatients(filteredPatients); // Render filtered patients
+    });
+}
+
+// Helper functions for formatting data
+function formatComplaints(complaints) {
+    let complaintsArray = Array.isArray(complaints) 
+        ? complaints 
+        : complaints ? [complaints] : [];
+    return complaintsArray;
+}
+
+function formatNotes(notes) {
+    return typeof notes === 'string' ? notes : "";
+}
+
+// Render patients in the table
+function renderPatients(patients) {
+    const tableBody = document.getElementById("patient-list");
+    tableBody.innerHTML = ""; // Clear existing rows
+
+    if (!patients || patients.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No patients found</td></tr>`;
+        return;
     }
+   // Sort patients by submission date (newest first)
+patients.sort(
+        (a, b) => new Date(b.submittedAt) - new Date(a.submittedAt)
+    );
+
+    patients.forEach((patient) => {
+        const row = document.createElement("tr");
+
+        // Calculate age
+        const dob = new Date(patient.dob);
+        const today = new Date();
+        let ageText = "N/A";
+        let ageSticker = "";
+
+        if (!isNaN(dob.getTime())) {
+            const diffInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
+            const diffInYears = Math.floor(diffInDays / 365.25);
+
+            if (diffInDays < 30) {
+                ageText = `${diffInDays} days`;
+                ageSticker = "👶 Neonate";
+            } else if (diffInDays < 365) {
+                ageText = `${Math.floor(diffInDays / 30.44)} months`;
+                ageSticker = "🧒 Infant";
+            } else {
+                ageText = `${diffInYears} years`;
+                ageSticker =
+                    diffInYears > 60
+                        ? "👴 Geriatric"
+                        : diffInYears < 13
+                        ? "🧒 Child"
+                        : "🧑 Adult";
+            }
+        }
+
+        // Complaints
+        let complaintsArray = Array.isArray(patient.complaints) 
+            ? patient.complaints 
+            : patient.complaints ? [patient.complaints] : [];
+        let notesString = typeof patient.complaintNotes === 'string' 
+            ? patient.complaintNotes 
+            : "";
+
+        const chiefComplaints = complaintsArray
+            .concat(notesString ? [notesString] : [])
+            .filter(item => item !== null && item !== undefined)
+            .map(item => {
+                // Ensure 'item' is a string before calling replace
+                return typeof item === 'string' ? item.replace(/remove/gi, "").trim() : "";
+            })
+            .filter(Boolean) // Remove empty strings
+            .join(", ");
+
+        // Highlight row based on complaints
+        const complaintsLower = chiefComplaints.toLowerCase();
+        if (
+            complaintsLower.includes("chest pain") ||
+            complaintsLower.includes("shortness of breath")
+        ) {
+            row.classList.add("red-highlight");
+        } else if (
+            complaintsArray.length > 3 ||
+            complaintsLower.includes("fever")
+        ) {
+            row.classList.add("yellow-highlight");
+        } else {
+            row.classList.add("green-highlight");
+        }
+
+        // Render row
+        row.innerHTML = `
+            <td>${patient.code || "N/A"}</td>
+            <td>${patient.name || "N/A"}</td>
+            <td>${patient.dob || "N/A"} (${ageText}) ${ageSticker}</td>
+            <td>${chiefComplaints || "N/A"}</td>
+            <td>${patient.notes || "N/A"}</td>
+            <td class="actions-cell">
+                <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
+                    <i class="fas fa-eye" title="View Details"></i>
+                </button>
+                ${
+                    ["seyed", "aldrin"].includes(currentUser)
+                        ? `<button class="remove-btn" onclick="removePatient('${patient.code}')">
+                             <i class="fas fa-trash" title="Remove Patient"></i>
+                           </button>`
+                        : ""
+                }
+                <button class="download-btn" onclick="downloadPatientPDF('${patient.code}')">
+                    <i class="fas fa-download" title="Download"></i>
+                </button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
 
     // Helper functions for formatting data
     function formatComplaints(complaints) {
-        return Array.isArray(complaints) ? complaints : (complaints ? [complaints] : []);
+        let complaintsArray = complaints;
+        if (!Array.isArray(complaintsArray)) {
+            if (typeof complaintsArray === 'string') {
+                complaintsArray = [complaintsArray];
+            } else {
+                complaintsArray = [];
+            }
+        }
+        return complaintsArray;
     }
 
     function formatNotes(notes) {
-        return typeof notes === 'string' ? notes : "";
-    }
-
-    // Render patients in the table
-    function renderPatients(patients) {
-        const tableBody = document.getElementById("patient-list");
-        tableBody.innerHTML = ""; // Clear existing rows
-
-        if (!patients || patients.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No patients found</td></tr>`;
-            return;
+        let notesString = notes || "";
+        if (typeof notesString !== 'string') {
+            notesString = "";
         }
-
-        // Sort patients by submission date (newest first)
-        patients.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
-
-        patients.forEach((patient) => {
-            const row = document.createElement("tr");
-
-            // Calculate age
-            const dob = new Date(patient.dob);
-            const today = new Date();
-            let ageText = "N/A";
-            let ageSticker = "";
-
-            if (!isNaN(dob.getTime())) {
-                const diffInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
-                const diffInYears = Math.floor(diffInDays / 365.25);
-
-                if (diffInDays < 30) {
-                    ageText = `${diffInDays} days`;
-                    ageSticker = "👶 Neonate";
-                } else if (diffInDays < 365) {
-                    ageText = `${Math.floor(diffInDays / 30.44)} months`;
-                    ageSticker = "🧒 Infant";
-                } else {
-                    ageText = `${diffInYears} years`;
-                    ageSticker = diffInYears > 60 ? "👴 Geriatric" : diffInYears < 13 ? "🧒 Child" : "🧑 Adult";
-                }
-            }
-
-            // Complaints including notes in Chief Complaints
-            const chiefComplaints = formatComplaints(patient.complaints)
-                .concat(formatNotes(patient.complaintNotes) ? [patient.complaintNotes] : [])
-                .filter(Boolean)
-                .join(", ");
-
-            // Highlight row based on complaints
-            const complaintsLower = chiefComplaints.toLowerCase();
-            if (
-                complaintsLower.includes("chest pain") ||
-                complaintsLower.includes("shortness of breath")
-            ) {
-                row.classList.add("red-highlight");
-            } else if (
-                complaintsLower.split(",").length > 3 ||
-                complaintsLower.includes("fever")
-            ) {
-                row.classList.add("yellow-highlight");
-            } else {
-                row.classList.add("green-highlight");
-            }
-
-            // Render row
-            row.innerHTML = `
-                <td>${patient.code || "N/A"}</td>
-                <td>${patient.name || "N/A"}</td>
-                <td>${patient.dob || "N/A"} (${ageText}) ${ageSticker}</td>
-                <td>${chiefComplaints || "N/A"}</td>
-                <td>${patient.notes || "N/A"}</td>
-                <td class="actions-cell">
-                    <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
-                        <i class="fas fa-eye" title="View Details"></i>
-                    </button>
-                    ${["seyed", "aldrin"].includes(currentUser) ? `<button class="remove-btn" onclick="removePatient('${patient.code}')"><i class="fas fa-trash" title="Remove Patient"></i></button>` : ""}
-                    <button class="download-btn" onclick="downloadPatientPDF('${patient.code}')"><i class="fas fa-download" title="Download"></i></button>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
+        return notesString;
     }
+      // Call the function to fetch and render patients on page load
+      fetchAndRenderPatients();
 
-    // View patient details
-    function viewPatientDetails(patientCode) {
+      // View patient details
+      function viewPatientDetails(patientCode) {
         fetch(`/submission/${patientCode}`)
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Failed to fetch patient details.");
-                }
-                return response.json();
-            })
-            .then((patient) => {
-                const detailsHTML = `
-                    <p><strong>Unique ID:</strong> ${patient.code || "N/A"}</p>
-                    <p><strong>Name:</strong> ${patient.name || "N/A"}</p>
-                    <p><strong>Date of Birth:</strong> ${patient.dob || "N/A"}</p>
-                    <p><strong>Chief Complaints:</strong> ${(patient.complaints || []).join(", ") || "N/A"}</p>
-                    <p><strong>Complaint Notes:</strong> ${patient.complaintNotes || "N/A"}</p>
-                    <p><strong>Allergies:</strong> ${patient.allergies || "N/A"} ${patient.allergyExplanation ? `(${patient.allergyExplanation})` : ""}</p>
-                    <p><strong>Medicines Taken:</strong> ${patient.medicine || "N/A"} ${patient.medicineExplanation ? `(${patient.medicineExplanation})` : ""}</p>
-                    <p><strong>Chronic Conditions:</strong> ${patient.chronicCondition || "N/A"} ${patient.chronicConditionExplanation ? `(${patient.chronicConditionExplanation})` : ""}</p>
-                    <p><strong>Surgery History:</strong> ${patient.surgery || "N/A"} ${patient.surgeryExplanation ? `(${patient.surgeryExplanation})` : ""}</p>
-                    <p><strong>Travel History:</strong> ${patient.travelHistory || "N/A"} ${patient.travelHistoryExplanation ? `(${patient.travelHistoryExplanation})` : ""}</p>
-                    <p><strong>Remarks:</strong> ${patient.notes || "N/A"}</p>
-                    <p><strong>Submitted At:</strong> ${new Date(patient.submittedAt).toLocaleString() || "N/A"}</p>
-                `;
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Failed to fetch patient details.");
+            }
+            return response.json();
+          })
+          .then((patient) => {
+            const mapArabicToEnglish = (value) =>
+              value === "لا" ? "No" : value;
 
-                patientDetails.innerHTML = detailsHTML;
-                patientModal.style.display = "flex"; // Show the modal
-            })
-            .catch((error) => {
-                console.error("Error fetching patient details:", error);
-                alert("Unable to fetch patient details. Please try again.");
-            });
-    }
+            // Prepare patient details dynamically
+            const sanitizedComplaints = (patient.complaints || [])
+              .map((complaint) => mapArabicToEnglish(complaint))
+              .join(", ");
+
+            const detailsHTML = `
+                <p><strong>Unique ID:</strong> ${patient.code || "N/A"}</p>
+                <p><strong>Name:</strong> ${patient.name || "N/A"}</p>
+                <p><strong>Date of Birth:</strong> ${patient.dob || "N/A"}</p>
+                <p><strong>Chief Complaints:</strong> ${
+                  sanitizedComplaints || "N/A"
+                }</p>
+                <p><strong>Complaint Notes:</strong> ${mapArabicToEnglish(
+                  patient.complaintNotes || "N/A"
+                )}</p>
+                <p><strong>Allergies:</strong> ${mapArabicToEnglish(
+                  patient.allergies || "N/A"
+                )} ${
+              patient.allergyExplanation
+                ? `(${mapArabicToEnglish(patient.allergyExplanation)})`
+                : ""
+            }</p>
+                <p><strong>Medicines Taken:</strong> ${mapArabicToEnglish(
+                  patient.medicine || "N/A"
+                )} ${
+              patient.medicineExplanation
+                ? `(${mapArabicToEnglish(patient.medicineExplanation)})`
+                : ""
+            }</p>
+                <p><strong>Chronic Conditions:</strong> ${mapArabicToEnglish(
+                  patient.chronicCondition || "N/A"
+                )} ${
+              patient.chronicConditionExplanation
+                ? `(${mapArabicToEnglish(patient.chronicConditionExplanation)})`
+                : ""
+            }</p>
+                <p><strong>Surgery History:</strong> ${mapArabicToEnglish(
+                  patient.surgery || "N/A"
+                )} ${
+              patient.surgeryExplanation
+                ? `(${mapArabicToEnglish(patient.surgeryExplanation)})`
+                : ""
+            }</p>
+                <p><strong>Travel History:</strong> ${mapArabicToEnglish(
+                  patient.travelHistory || "N/A"
+                )} ${
+              patient.travelHistoryExplanation
+                ? `(${mapArabicToEnglish(patient.travelHistoryExplanation)})`
+                : ""
+            }</p>
+                <p><strong>Remarks:</strong> ${mapArabicToEnglish(
+                  patient.notes || "N/A"
+                )}</p>
+                <p><strong>Submitted At:</strong> ${
+                  new Date(patient.submittedAt).toLocaleString() || "N/A"
+                }</p>
+            `;
+
+            // Update modal content
+            patientDetails.innerHTML = detailsHTML;
+            patientModal.style.display = "flex"; // Show the modal
+          })
+          .catch((error) => {
+            console.error("Error fetching patient details:", error);
+            alert("Unable to fetch patient details. Please try again.");
+          });
       } // Close modal
       closeModal.addEventListener("click", () => {
         patientModal.style.display = "none";
