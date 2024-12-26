@@ -1003,14 +1003,7 @@ async function downloadPatientPDF(patientCode) {
         console.error("Error generating PDF:", error);
         alert("Unable to generate PDF. Please try again.");
     }
-}
-      const complaintsArray = Array.isArray(patient.complaints)
-  ? patient.complaints
-  : [];
-const notesString = typeof patient.complaintNotes === "string"
-  ? patient.complaintNotes
-  : "";
-      
+}     
     </script>
   </body>
 </html>
