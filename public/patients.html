@@ -676,86 +676,48 @@
       // Call the function to fetch and render patients on page load
       fetchAndRenderPatients();
 
-      // View patient details
-      function viewPatientDetails(patientCode) {
-        fetch(`/submission/${patientCode}`)
-          .then((response) => {
+     function viewPatientDetails(patientCode) {
+    fetch(`/submission/${patientCode}`)
+        .then(response => {
             if (!response.ok) {
-              throw new Error("Failed to fetch patient details.");
+                throw new Error("Failed to fetch patient details.");
             }
             return response.json();
-          })
-          .then((patient) => {
-            const mapArabicToEnglish = (value) =>
-              value === "لا" ? "No" : value;
+        })
+        .then(patient => {
+            // Function to map Arabic 'لا' to 'No'
+            const mapArabicToEnglish = (value) => value === "لا" ? "No" : (value || "N/A");
 
             // Prepare patient details dynamically
             const sanitizedComplaints = (patient.complaints || [])
-              .map((complaint) => mapArabicToEnglish(complaint))
-              .join(", ");
+                .map(complaint => mapArabicToEnglish(complaint))
+                .join(", ");
 
             const detailsHTML = `
-                <p><strong>Unique ID:</strong> ${patient.code || "N/A"}</p>
-                <p><strong>Name:</strong> ${patient.name || "N/A"}</p>
-                <p><strong>Date of Birth:</strong> ${patient.dob || "N/A"}</p>
-                <p><strong>Chief Complaints:</strong> ${
-                  sanitizedComplaints || "N/A"
-                }</p>
-                <p><strong>Complaint Notes:</strong> ${mapArabicToEnglish(
-                  patient.complaintNotes || "N/A"
-                )}</p>
-                <p><strong>Allergies:</strong> ${mapArabicToEnglish(
-                  patient.allergies || "N/A"
-                )} ${
-              patient.allergyExplanation
-                ? `(${mapArabicToEnglish(patient.allergyExplanation)})`
-                : ""
-            }</p>
-                <p><strong>Medicines Taken:</strong> ${mapArabicToEnglish(
-                  patient.medicine || "N/A"
-                )} ${
-              patient.medicineExplanation
-                ? `(${mapArabicToEnglish(patient.medicineExplanation)})`
-                : ""
-            }</p>
-                <p><strong>Chronic Conditions:</strong> ${mapArabicToEnglish(
-                  patient.chronicCondition || "N/A"
-                )} ${
-              patient.chronicConditionExplanation
-                ? `(${mapArabicToEnglish(patient.chronicConditionExplanation)})`
-                : ""
-            }</p>
-                <p><strong>Surgery History:</strong> ${mapArabicToEnglish(
-                  patient.surgery || "N/A"
-                )} ${
-              patient.surgeryExplanation
-                ? `(${mapArabicToEnglish(patient.surgeryExplanation)})`
-                : ""
-            }</p>
-                <p><strong>Travel History:</strong> ${mapArabicToEnglish(
-                  patient.travelHistory || "N/A"
-                )} ${
-              patient.travelHistoryExplanation
-                ? `(${mapArabicToEnglish(patient.travelHistoryExplanation)})`
-                : ""
-            }</p>
-                <p><strong>Remarks:</strong> ${mapArabicToEnglish(
-                  patient.notes || "N/A"
-                )}</p>
-                <p><strong>Submitted At:</strong> ${
-                  new Date(patient.submittedAt).toLocaleString() || "N/A"
-                }</p>
+                <p><strong>Unique ID:</strong> ${mapArabicToEnglish(patient.code)}</p>
+                <p><strong>Name:</strong> ${mapArabicToEnglish(patient.name)}</p>
+                <p><strong>Date of Birth:</strong> ${mapArabicToEnglish(patient.dob)}</p>
+                <p><strong>Chief Complaints:</strong> ${sanitizedComplaints}</p>
+                <p><strong>Complaint Notes:</strong> ${mapArabicToEnglish(patient.complaintNotes)}</p>
+                <p><strong>Allergies:</strong> ${mapArabicToEnglish(patient.allergies)} ${mapArabicToEnglish(patient.allergyExplanation) !== "N/A" ? `(${mapArabicToEnglish(patient.allergyExplanation)})` : ""}</p>
+                <p><strong>Medicines Taken:</strong> ${mapArabicToEnglish(patient.medicine)} ${mapArabicToEnglish(patient.medicineExplanation) !== "N/A" ? `(${mapArabicToEnglish(patient.medicineExplanation)})` : ""}</p>
+                <p><strong>Chronic Conditions:</strong> ${mapArabicToEnglish(patient.chronicCondition)} ${mapArabicToEnglish(patient.chronicConditionExplanation) !== "N/A" ? `(${mapArabicToEnglish(patient.chronicConditionExplanation)})` : ""}</p>
+                <p><strong>Surgery History:</strong> ${mapArabicToEnglish(patient.surgery)} ${mapArabicToEnglish(patient.surgeryExplanation) !== "N/A" ? `(${mapArabicToEnglish(patient.surgeryExplanation)})` : ""}</p>
+                <p><strong>Travel History:</strong> ${mapArabicToEnglish(patient.travelHistory)} ${mapArabicToEnglish(patient.travelHistoryExplanation) !== "N/A" ? `(${mapArabicToEnglish(patient.travelHistoryExplanation)})` : ""}</p>
+                <p><strong>Remarks:</strong> ${mapArabicToEnglish(patient.notes)}</p>
+                <p><strong>Submitted At:</strong> ${mapArabicToEnglish(new Date(patient.submittedAt).toLocaleString())}</p>
             `;
 
             // Update modal content
             patientDetails.innerHTML = detailsHTML;
             patientModal.style.display = "flex"; // Show the modal
-          })
-          .catch((error) => {
+        })
+        .catch(error => {
             console.error("Error fetching patient details:", error);
             alert("Unable to fetch patient details. Please try again.");
-          });
-      } // Close modal
+        });
+}
+       // Close modal
       closeModal.addEventListener("click", () => {
         patientModal.style.display = "none";
       });
