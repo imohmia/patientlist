@@ -687,7 +687,7 @@ function viewPatientDetails(patientCode) {
         .then(patient => {
             const mapArabicToEnglish = (value) => {
                 if (value === "لا") return "No";
-                if (value === null || value === undefined) return "N/A";
+                if (value === null || value === undefined || value === "") return "N/A";
                 return value.toString().trim();
             };
 
@@ -695,11 +695,16 @@ function viewPatientDetails(patientCode) {
                 if (Array.isArray(value)) {
                     return value.map(mapArabicToEnglish).join(", ");
                 } else if (typeof value === 'object' && value !== null) {
-                    // For complex objects, you might want to handle specific keys or stringify
-                    return JSON.stringify(value);
+                    // Handle objects by returning JSON string (if needed for debugging)
+                    return JSON.stringify(value, null, 2);
                 }
                 return mapArabicToEnglish(value);
             };
+
+            // Format submittedAt field as a readable date
+            const formattedSubmittedAt = patient.submittedAt
+                ? new Date(patient.submittedAt).toLocaleString()
+                : "N/A";
 
             const detailsHTML = `
                 <p><strong>Unique ID:</strong> ${displayValue(patient.code)}</p>
@@ -707,27 +712,28 @@ function viewPatientDetails(patientCode) {
                 <p><strong>Date of Birth:</strong> ${displayValue(patient.dob)}</p>
                 <p><strong>Chief Complaints:</strong> ${displayValue(patient.complaints)}</p>
                 <p><strong>Complaint Notes:</strong> ${displayValue(patient.complaintNotes)}</p>
-                <p><strong>Allergies:</strong> ${displayValue(patient.allergies)} ${displayValue(patient.allergyExplanation)}</p>
-                <p><strong>Medicines Taken:</strong> ${displayValue(patient.medicine)} ${displayValue(patient.medicineExplanation)}</p>
-                <p><strong>Chronic Conditions:</strong> ${displayValue(patient.chronicCondition)} ${displayValue(patient.chronicConditionExplanation)}</p>
-                <p><strong>Surgery History:</strong> ${displayValue(patient.surgery)} ${displayValue(patient.surgeryExplanation)}</p>
-                <p><strong>Travel History:</strong> ${displayValue(patient.travelHistory)} ${displayValue(patient.travelHistoryExplanation)}</p>
+                <p><strong>Allergies:</strong> ${displayValue(patient.allergies)} (${displayValue(patient.allergyExplanation)})</p>
+                <p><strong>Medicines Taken:</strong> ${displayValue(patient.medicine)} (${displayValue(patient.medicineExplanation)})</p>
+                <p><strong>Chronic Conditions:</strong> ${displayValue(patient.chronicCondition)} (${displayValue(patient.chronicConditionExplanation)})</p>
+                <p><strong>Surgery History:</strong> ${displayValue(patient.surgery)} (${displayValue(patient.surgeryExplanation)})</p>
+                <p><strong>Travel History:</strong> ${displayValue(patient.travelHistory)} (${displayValue(patient.travelHistoryExplanation)})</p>
                 <p><strong>Remarks:</strong> ${displayValue(patient.notes)}</p>
-                <p><strong>Submitted At:</strong> ${displayValue(new Date(patient.submittedAt).toLocaleString())}</p>
+                <p><strong>Submitted At:</strong> ${formattedSubmittedAt}</p>
             `;
 
             // Update modal content
             patientDetails.innerHTML = detailsHTML;
             patientModal.style.display = "flex"; // Show the modal
 
-            // For debugging purposes
-            console.log('Patient data:', patient);
+            // Debugging log
+            console.log('Displayed patient data:', patient);
         })
         .catch(error => {
             console.error("Error fetching patient details:", error);
             alert("Unable to fetch patient details. Please try again.");
         });
 }
+
        // Close modal
       closeModal.addEventListener("click", () => {
         patientModal.style.display = "none";
