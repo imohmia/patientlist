@@ -694,16 +694,13 @@ function viewPatientDetails(patientCode) {
             const displayValue = (value) => {
                 if (Array.isArray(value)) {
                     return value.map(mapArabicToEnglish).join(", ");
-                } else if (typeof value === 'object' && value !== null) {
-                    // Handle objects by returning JSON string (if needed for debugging)
-                    return JSON.stringify(value, null, 2);
                 }
                 return mapArabicToEnglish(value);
             };
 
-            // Format submittedAt field as a readable date
-            const formattedSubmittedAt = patient.submittedAt
-                ? new Date(patient.submittedAt).toLocaleString()
+            // Format submitted_at field as a readable date
+            const formattedSubmittedAt = patient.submitted_at
+                ? new Date(patient.submitted_at).toLocaleString()
                 : "N/A";
 
             const detailsHTML = `
@@ -711,12 +708,12 @@ function viewPatientDetails(patientCode) {
                 <p><strong>Name:</strong> ${displayValue(patient.name)}</p>
                 <p><strong>Date of Birth:</strong> ${displayValue(patient.dob)}</p>
                 <p><strong>Chief Complaints:</strong> ${displayValue(patient.complaints)}</p>
-                <p><strong>Complaint Notes:</strong> ${displayValue(patient.complaintNotes)}</p>
-                <p><strong>Allergies:</strong> ${displayValue(patient.allergies)} (${displayValue(patient.allergyExplanation)})</p>
-                <p><strong>Medicines Taken:</strong> ${displayValue(patient.medicine)} (${displayValue(patient.medicineExplanation)})</p>
-                <p><strong>Chronic Conditions:</strong> ${displayValue(patient.chronicCondition)} (${displayValue(patient.chronicConditionExplanation)})</p>
-                <p><strong>Surgery History:</strong> ${displayValue(patient.surgery)} (${displayValue(patient.surgeryExplanation)})</p>
-                <p><strong>Travel History:</strong> ${displayValue(patient.travelHistory)} (${displayValue(patient.travelHistoryExplanation)})</p>
+                <p><strong>Complaint Notes:</strong> ${displayValue(patient.complaint_notes)}</p>
+                <p><strong>Allergies:</strong> ${displayValue(patient.allergies)} (${displayValue(patient.allergy_explanation)})</p>
+                <p><strong>Medicines Taken:</strong> ${displayValue(patient.medicine)} (${displayValue(patient.medicine_explanation)})</p>
+                <p><strong>Chronic Conditions:</strong> ${displayValue(patient.chronic_condition)} (${displayValue(patient.chronic_condition_explanation)})</p>
+                <p><strong>Surgery History:</strong> ${displayValue(patient.surgery)} (${displayValue(patient.surgery_explanation)})</p>
+                <p><strong>Travel History:</strong> ${displayValue(patient.travel_history)} (${displayValue(patient.travel_history_explanation)})</p>
                 <p><strong>Remarks:</strong> ${displayValue(patient.notes)}</p>
                 <p><strong>Submitted At:</strong> ${formattedSubmittedAt}</p>
             `;
@@ -733,7 +730,6 @@ function viewPatientDetails(patientCode) {
             alert("Unable to fetch patient details. Please try again.");
         });
 }
-
        // Close modal
       closeModal.addEventListener("click", () => {
         patientModal.style.display = "none";
