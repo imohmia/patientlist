@@ -548,7 +548,7 @@
         .then((response) => response.json())
         .then((data) => {
           currentUser = data.username;
-          userBox.textContent = Logged in as: ${currentUser};
+          userBox.textContent = `Logged in as: ${currentUser}`;
           fetchAndRenderPatients(); // Fetch and display patients
         })
         .catch((error) => console.error("Error fetching user:", error));
@@ -568,7 +568,7 @@
           })
           .catch((error) => {
             console.error("Error fetching patients:", error);
-            tableBody.innerHTML = <tr><td colspan="6" style="text-align:center;color:red;">Error fetching patients. Try again later.</td></tr>;
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">Error fetching patients. Try again later.</td></tr>`;
           });
 
         // Filter and render patients based on search term
@@ -598,7 +598,7 @@
           tableBody.innerHTML = ""; // Clear existing rows
 
           if (!patients || patients.length === 0) {
-            tableBody.innerHTML = <tr><td colspan="6" style="text-align:center;">No patients found</td></tr>;
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No patients found</td></tr>`;
             return;
           }
 
@@ -610,32 +610,32 @@
           patients.forEach((patient) => {
             const row = document.createElement("tr");
 
-             // Calculate age
-        const dob = new Date(patient.dob);
-        const today = new Date();
-        let ageText = "N/A";
-        let ageSticker = "";
+            // Calculate age
+const dob = new Date(patient.dob);
+const today = new Date();
+let ageText = "N/A";
+let ageSticker = "";
 
-        if (!isNaN(dob.getTime())) {
-          const diffInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
-          const diffInYears = Math.floor(diffInDays / 365.25);
+if (!isNaN(dob.getTime())) {
+    const diffInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
+    const diffInYears = Math.floor(diffInDays / 365.25);
 
-          if (diffInDays < 30) {
-            ageText = ${diffInDays} days;
-            ageSticker = "👶 Neonate"; // Updated label
-          } else if (diffInDays < 365) {
-            ageText = ${Math.floor(diffInDays / 30.44)} months;
-            ageSticker = "🧒 Infant";
-          } else {
-            ageText = ${diffInYears} years;
-            ageSticker =
-              diffInYears > 60
-                ? "👴 Geriatric" // Updated label
+    if (diffInDays < 30) {
+        ageText = `${diffInDays} days`;
+        ageSticker = "👶 Neonate";
+    } else if (diffInDays < 365) {
+        ageText = `${Math.floor(diffInDays / 30.44)} months`;
+        ageSticker = "🧒 Infant";
+    } else {
+        ageText = `${diffInYears} years`;
+        ageSticker =
+            diffInYears > 60
+                ? "👴 Geriatric"
                 : diffInYears < 13
                 ? "🧒 Child"
                 : "🧑 Adult";
-          }
-        }
+    }
+}
 
             // Complaints
             const chiefComplaints = (patient.complaints || [])
@@ -663,7 +663,7 @@
             }
 
             // Render row
-          row.innerHTML = 
+         row.innerHTML = `
   <td>${patient.code || "N/A"}</td>
   <td>${patient.name || "N/A"}</td>
   <td>${patient.dob || "N/A"} (${ageText}) ${ageSticker}</td>
@@ -674,17 +674,17 @@
       <i class="fas fa-eye" title="View Details"></i>
     </button>
     ${
-      currentUser === "seyed"
-        ? <button class="remove-btn" onclick="removePatient('${patient.code}')">
+      ["seyed", "aldrin"].includes(currentUser)
+        ? `<button class="remove-btn" onclick="removePatient('${patient.code}')">
              <i class="fas fa-trash" title="Remove Patient"></i>
-           </button>
+           </button>`
         : ""
     }
     <button class="download-btn" onclick="downloadPatientPDF('${patient.code}')">
       <i class="fas fa-download" title="Download"></i>
     </button>
   </td>
-;
+`;
             tableBody.appendChild(row);
           });
         }
@@ -695,7 +695,7 @@
 
       // View patient details
       function viewPatientDetails(patientCode) {
-        fetch(/submission/${patientCode})
+        fetch(`/submission/${patientCode}`)
           .then((response) => {
             if (!response.ok) {
               throw new Error("Failed to fetch patient details.");
@@ -711,7 +711,7 @@
               .map((complaint) => mapArabicToEnglish(complaint))
               .join(", ");
 
-            const detailsHTML = 
+            const detailsHTML = `
                 <p><strong>Unique ID:</strong> ${patient.code || "N/A"}</p>
                 <p><strong>Name:</strong> ${patient.name || "N/A"}</p>
                 <p><strong>Date of Birth:</strong> ${patient.dob || "N/A"}</p>
@@ -725,35 +725,35 @@
                   patient.allergies || "N/A"
                 )} ${
               patient.allergyExplanation
-                ? (${mapArabicToEnglish(patient.allergyExplanation)})
+                ? `(${mapArabicToEnglish(patient.allergyExplanation)})`
                 : ""
             }</p>
                 <p><strong>Medicines Taken:</strong> ${mapArabicToEnglish(
                   patient.medicine || "N/A"
                 )} ${
               patient.medicineExplanation
-                ? (${mapArabicToEnglish(patient.medicineExplanation)})
+                ? `(${mapArabicToEnglish(patient.medicineExplanation)})`
                 : ""
             }</p>
                 <p><strong>Chronic Conditions:</strong> ${mapArabicToEnglish(
                   patient.chronicCondition || "N/A"
                 )} ${
               patient.chronicConditionExplanation
-                ? (${mapArabicToEnglish(patient.chronicConditionExplanation)})
+                ? `(${mapArabicToEnglish(patient.chronicConditionExplanation)})`
                 : ""
             }</p>
                 <p><strong>Surgery History:</strong> ${mapArabicToEnglish(
                   patient.surgery || "N/A"
                 )} ${
               patient.surgeryExplanation
-                ? (${mapArabicToEnglish(patient.surgeryExplanation)})
+                ? `(${mapArabicToEnglish(patient.surgeryExplanation)})`
                 : ""
             }</p>
                 <p><strong>Travel History:</strong> ${mapArabicToEnglish(
                   patient.travelHistory || "N/A"
                 )} ${
               patient.travelHistoryExplanation
-                ? (${mapArabicToEnglish(patient.travelHistoryExplanation)})
+                ? `(${mapArabicToEnglish(patient.travelHistoryExplanation)})`
                 : ""
             }</p>
                 <p><strong>Remarks:</strong> ${mapArabicToEnglish(
@@ -762,7 +762,7 @@
                 <p><strong>Submitted At:</strong> ${
                   new Date(patient.submittedAt).toLocaleString() || "N/A"
                 }</p>
-            ;
+            `;
 
             // Update modal content
             patientDetails.innerHTML = detailsHTML;
@@ -812,7 +812,7 @@
       function removePatient(patientCode) {
         if (!confirm("Are you sure you want to remove this patient?")) return;
 
-        fetch(/delete-patient/${patientCode}, { method: "DELETE" })
+        fetch(`/delete-patient/${patientCode}`, { method: "DELETE" })
           .then((response) => {
             if (response.ok) {
               alert("Patient removed successfully.");
@@ -856,7 +856,7 @@ async function downloadPatientPDF(patientCode) {
         const { jsPDF } = window.jspdf;
 
         // Fetch patient details
-        const response = await fetch(/submission/${patientCode});
+        const response = await fetch(`/submission/${patientCode}`);
         if (!response.ok) {
             throw new Error("Failed to fetch patient details.");
         }
@@ -918,14 +918,14 @@ async function downloadPatientPDF(patientCode) {
 
             // Left Column
             doc.setFont("times", "bold");
-            doc.text(${label1}:, leftX, y);
+            doc.text(`${label1}:`, leftX, y);
             doc.setFont("times", "normal");
             doc.text(value1 || "N/A", leftX + 40, y);
 
             // Right Column
             if (label2 && value2) {
                 doc.setFont("times", "bold");
-                doc.text(${label2}:, rightX, y);
+                doc.text(`${label2}:`, rightX, y);
                 doc.setFont("times", "normal");
                 doc.text(value2 || "N/A", rightX + 40, y);
             }
@@ -958,7 +958,7 @@ async function downloadPatientPDF(patientCode) {
             doc.setFontSize(12);
             doc.setTextColor(0, 0, 0); // Black text
             doc.setFont("times", "bold");
-            doc.text(${label}:, margin + 10, y + 7);
+            doc.text(`${label}:`, margin + 10, y + 7);
 
             doc.setFont("times", "normal");
             doc.text(value || "N/A", margin + 70, y + 7);
@@ -966,7 +966,7 @@ async function downloadPatientPDF(patientCode) {
             if (explanation) {
                 doc.setFont("times", "italic");
                 doc.setTextColor(100, 100, 100); // Gray for explanation
-                doc.text(Explanation: ${explanation}, margin + 70, y + 12);
+                doc.text(`Explanation: ${explanation}`, margin + 70, y + 12);
             }
 
             y = boxY + boxHeight + 7; // Move to the next line
@@ -988,14 +988,14 @@ async function downloadPatientPDF(patientCode) {
         doc.setTextColor(255, 255, 255); // White text
         doc.setFont("times", "italic");
         doc.text(
-            Generated by: ${user.username} | ${new Date().toLocaleString()} | All rights reserved © MPH Hospital ${new Date().getFullYear()},
+            `Generated by: ${user.username} | ${new Date().toLocaleString()} | All rights reserved © MPH Hospital ${new Date().getFullYear()}`,
             105,
             293,
             { align: "center" }
         );
 
         // Save the PDF
-        doc.save(Patient_${patient.code || "Details"}.pdf);
+        doc.save(`Patient_${patient.code || "Details"}.pdf`);
     } catch (error) {
         console.error("Error generating PDF:", error);
         alert("Unable to generate PDF. Please try again.");
