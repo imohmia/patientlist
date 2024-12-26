@@ -548,7 +548,7 @@
         .then((response) => response.json())
         .then((data) => {
           currentUser = data.username;
-          userBox.textContent = `Logged in as: ${currentUser}`;
+          userBox.textContent = Logged in as: ${currentUser};
           fetchAndRenderPatients(); // Fetch and display patients
         })
         .catch((error) => console.error("Error fetching user:", error));
@@ -568,7 +568,7 @@
           })
           .catch((error) => {
             console.error("Error fetching patients:", error);
-            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">Error fetching patients. Try again later.</td></tr>`;
+            tableBody.innerHTML = <tr><td colspan="6" style="text-align:center;color:red;">Error fetching patients. Try again later.</td></tr>;
           });
 
         // Filter and render patients based on search term
@@ -661,11 +661,7 @@ if (!isNaN(dob.getTime())) {
             } else {
               row.classList.add("green-highlight");
             }
-              
-// Translate complaints to English
-    const chiefComplaintsArabic = patient.complaints?.join(", ") || "N/A";
-    const chiefComplaintsEnglish = await translateText(chiefComplaintsArabic)
-              
+
             // Render row
          row.innerHTML = 
   <td>${patient.code || "N/A"}</td>
@@ -699,81 +695,83 @@ if (!isNaN(dob.getTime())) {
 
       // View patient details
       function viewPatientDetails(patientCode) {
-  fetch(`/submission/${patientCode}`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to fetch patient details.");
-      }
-      return response.json();
-    })
-    .then((patient) => {
-      const mapArabicToEnglish = (value) =>
-        value === "لا" ? "No" : value;
+        fetch(/submission/${patientCode})
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Failed to fetch patient details.");
+            }
+            return response.json();
+          })
+          .then((patient) => {
+            const mapArabicToEnglish = (value) =>
+              value === "لا" ? "No" : value;
 
-      // Prepare patient details dynamically
-      const sanitizedComplaints = (patient.complaints || [])
-        .map((complaint) => mapArabicToEnglish(complaint))
-        .join(", ");
+            // Prepare patient details dynamically
+            const sanitizedComplaints = (patient.complaints || [])
+              .map((complaint) => mapArabicToEnglish(complaint))
+              .join(", ");
 
-      const detailsHTML = `
-        <p><strong>Unique ID:</strong> ${patient.code || "N/A"}</p>
-        <p><strong>Name:</strong> ${patient.name || "N/A"}</p>
-        <p><strong>Date of Birth:</strong> ${patient.dob || "N/A"}</p>
-        <p><strong>Chief Complaints:</strong> ${sanitizedComplaints || "N/A"}</p>
-        <p><strong>Complaint Notes:</strong> ${mapArabicToEnglish(
-          patient.complaintNotes || "N/A"
-        )}</p>
-        <p><strong>Allergies:</strong> ${mapArabicToEnglish(
-          patient.allergies || "N/A"
-        )} ${
-        patient.allergyExplanation
-          ? `(${mapArabicToEnglish(patient.allergyExplanation)})`
-          : ""
-      }</p>
-        <p><strong>Medicines Taken:</strong> ${mapArabicToEnglish(
-          patient.medicine || "N/A"
-        )} ${
-        patient.medicineExplanation
-          ? `(${mapArabicToEnglish(patient.medicineExplanation)})`
-          : ""
-      }</p>
-        <p><strong>Chronic Conditions:</strong> ${mapArabicToEnglish(
-          patient.chronicCondition || "N/A"
-        )} ${
-        patient.chronicConditionExplanation
-          ? `(${mapArabicToEnglish(patient.chronicConditionExplanation)})`
-          : ""
-      }</p>
-        <p><strong>Surgery History:</strong> ${mapArabicToEnglish(
-          patient.surgery || "N/A"
-        )} ${
-        patient.surgeryExplanation
-          ? `(${mapArabicToEnglish(patient.surgeryExplanation)})`
-          : ""
-      }</p>
-        <p><strong>Travel History:</strong> ${mapArabicToEnglish(
-          patient.travelHistory || "N/A"
-        )} ${
-        patient.travelHistoryExplanation
-          ? `(${mapArabicToEnglish(patient.travelHistoryExplanation)})`
-          : ""
-      }</p>
-        <p><strong>Remarks:</strong> ${mapArabicToEnglish(
-          patient.notes || "N/A"
-        )}</p>
-        <p><strong>Submitted At:</strong> ${
-          new Date(patient.submittedAt).toLocaleString() || "N/A"
-        }</p>
-      `;
+            const detailsHTML = 
+                <p><strong>Unique ID:</strong> ${patient.code || "N/A"}</p>
+                <p><strong>Name:</strong> ${patient.name || "N/A"}</p>
+                <p><strong>Date of Birth:</strong> ${patient.dob || "N/A"}</p>
+                <p><strong>Chief Complaints:</strong> ${
+                  sanitizedComplaints || "N/A"
+                }</p>
+                <p><strong>Complaint Notes:</strong> ${mapArabicToEnglish(
+                  patient.complaintNotes || "N/A"
+                )}</p>
+                <p><strong>Allergies:</strong> ${mapArabicToEnglish(
+                  patient.allergies || "N/A"
+                )} ${
+              patient.allergyExplanation
+                ? (${mapArabicToEnglish(patient.allergyExplanation)})
+                : ""
+            }</p>
+                <p><strong>Medicines Taken:</strong> ${mapArabicToEnglish(
+                  patient.medicine || "N/A"
+                )} ${
+              patient.medicineExplanation
+                ? (${mapArabicToEnglish(patient.medicineExplanation)})
+                : ""
+            }</p>
+                <p><strong>Chronic Conditions:</strong> ${mapArabicToEnglish(
+                  patient.chronicCondition || "N/A"
+                )} ${
+              patient.chronicConditionExplanation
+                ? (${mapArabicToEnglish(patient.chronicConditionExplanation)})
+                : ""
+            }</p>
+                <p><strong>Surgery History:</strong> ${mapArabicToEnglish(
+                  patient.surgery || "N/A"
+                )} ${
+              patient.surgeryExplanation
+                ? (${mapArabicToEnglish(patient.surgeryExplanation)})
+                : ""
+            }</p>
+                <p><strong>Travel History:</strong> ${mapArabicToEnglish(
+                  patient.travelHistory || "N/A"
+                )} ${
+              patient.travelHistoryExplanation
+                ? (${mapArabicToEnglish(patient.travelHistoryExplanation)})
+                : ""
+            }</p>
+                <p><strong>Remarks:</strong> ${mapArabicToEnglish(
+                  patient.notes || "N/A"
+                )}</p>
+                <p><strong>Submitted At:</strong> ${
+                  new Date(patient.submittedAt).toLocaleString() || "N/A"
+                }</p>
+            ;
 
-      // Update modal content
-      patientDetails.innerHTML = detailsHTML;
-      patientModal.style.display = "flex"; // Show the modal
-    })
-    .catch((error) => {
-      console.error("Error fetching patient details:", error);
-      alert("Unable to fetch patient details. Please try again.");
-    });
+            // Update modal content
+            patientDetails.innerHTML = detailsHTML;
+            patientModal.style.display = "flex"; // Show the modal
+          })
+          .catch((error) => {
+            console.error("Error fetching patient details:", error);
+            alert("Unable to fetch patient details. Please try again.");
+          });
       } // Close modal
       closeModal.addEventListener("click", () => {
         patientModal.style.display = "none";
@@ -951,7 +949,6 @@ async function downloadPatientPDF(patientCode) {
         const addBoxedDetail = (label, value, explanation = "") => {
             const boxHeight = explanation ? 15 : 10;
             const boxY = y;
-            
 
             doc.setFillColor(245, 245, 245); // Light gray background
             doc.setDrawColor(200, 200, 200); // Gray border
@@ -996,26 +993,13 @@ async function downloadPatientPDF(patientCode) {
             293,
             { align: "center" }
         );
-const chiefComplaintsArabic = (patient.complaints || []).join(", ");
-const chiefComplaintsEnglish = await translateText(chiefComplaintsArabic);
-        
+
         // Save the PDF
-        addBoxedDetail("Chief Complaints", `${chiefComplaintsEnglish} (${chiefComplaintsArabic})`);
         doc.save(Patient_${patient.code || "Details"}.pdf);
     } catch (error) {
         console.error("Error generating PDF:", error);
         alert("Unable to generate PDF. Please try again.");
     }
-}
-async function translateText(text, sourceLang = "ar", targetLang = "en") {
-  try {
-    const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`);
-    const data = await response.json();
-    return data.responseData.translatedText;
-  } catch (error) {
-    console.error("Translation error:", error);
-    return text; // Return original text if translation fails
-  }
 }
     </script>
   </body>
