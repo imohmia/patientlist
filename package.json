@@ -18,11 +18,12 @@
     "express-session": "^1.18.1",
     "jspdf": "^2.5.2",
     "corex-autotable": "^3.5.25",
-    "pg": "^8.11.0", 
-    "dotenv": "^16.0.3" 
+    "pg": "^8.11.0",
+    "dotenv": "^16.0.3",
+    "@google-cloud/translate": "^6.2.4"
   },
   "engines": {
-    "node": "18.x" 
+    "node": "18.x"
   },
   "repository": {
     "url": "https://glitch.com/edit/#!/glitch-hello-node"
