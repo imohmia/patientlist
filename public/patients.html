@@ -627,14 +627,16 @@
                 }
             }
 
-            // Complaints - ensuring each item is treated as a string
-            const chiefComplaints = (patient.complaints || [])
-                .concat(patient.complaintNotes ? [patient.complaintNotes] : [])
-                .filter(Boolean)
-                .map((item) => {
-                    return typeof item === 'string' ? item.replace(/remove/gi, "").trim() : (item ? item.toString().replace(/remove/gi, "").trim() : "");
-                })
-                .join(", ");
+           // Complaints - ensuring each item is treated as a string
+const chiefComplaints = (patient.complaints || [])
+    .concat(patient.complaint_notes ? [patient.complaint_notes] : []) // Use correct API field name
+    .filter(Boolean) // Remove any falsy values (e.g., null, undefined, empty strings)
+    .map((item) => {
+        return typeof item === 'string' 
+            ? item.replace(/remove/gi, "").trim() 
+            : (item ? item.toString().replace(/remove/gi, "").trim() : "");
+    })
+    .join(", ") || "N/A"; // Default to "N/A" if the resulting string is empty
 
             // Highlight row based on complaints
             const complaintsLower = chiefComplaints.toLowerCase();
