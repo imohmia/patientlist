@@ -686,40 +686,42 @@ function viewPatientDetails(patientCode) {
         })
         .then(patient => {
             const mapArabicToEnglish = (value) => {
-                // Convert 'لا' to 'No', handle empty strings, null, and undefined
-                return value === "لا" ? "No" : (value || "N/A").toString().trim();
+                if (value === "لا") return "No";
+                if (value === null || value === undefined) return "N/A";
+                return value.toString().trim();
             };
 
-            // Prepare patient details dynamically, ensuring all data types are converted to strings
-            const prepareDataForDisplay = (data) => {
-                if (Array.isArray(data)) {
-                    return data.map(mapArabicToEnglish).join(", ");
-                } else if (typeof data === 'object' && data !== null) {
-                    // If it's an object, stringify it for display or handle specific keys if needed
-                    return JSON.stringify(data);
+            const displayValue = (value) => {
+                if (Array.isArray(value)) {
+                    return value.map(mapArabicToEnglish).join(", ");
+                } else if (typeof value === 'object' && value !== null) {
+                    // For complex objects, you might want to handle specific keys or stringify
+                    return JSON.stringify(value);
                 }
-                return mapArabicToEnglish(data);
+                return mapArabicToEnglish(value);
             };
 
-            // Ensure all fields are processed through prepareDataForDisplay
             const detailsHTML = `
-                <p><strong>Unique ID:</strong> ${prepareDataForDisplay(patient.code)}</p>
-                <p><strong>Name:</strong> ${prepareDataForDisplay(patient.name)}</p>
-                <p><strong>Date of Birth:</strong> ${prepareDataForDisplay(patient.dob)}</p>
-                <p><strong>Chief Complaints:</strong> ${prepareDataForDisplay(patient.complaints)}</p>
-                <p><strong>Complaint Notes:</strong> ${prepareDataForDisplay(patient.complaintNotes)}</p>
-                <p><strong>Allergies:</strong> ${prepareDataForDisplay(patient.allergies)} ${prepareDataForDisplay(patient.allergyExplanation)}</p>
-                <p><strong>Medicines Taken:</strong> ${prepareDataForDisplay(patient.medicine)} ${prepareDataForDisplay(patient.medicineExplanation)}</p>
-                <p><strong>Chronic Conditions:</strong> ${prepareDataForDisplay(patient.chronicCondition)} ${prepareDataForDisplay(patient.chronicConditionExplanation)}</p>
-                <p><strong>Surgery History:</strong> ${prepareDataForDisplay(patient.surgery)} ${prepareDataForDisplay(patient.surgeryExplanation)}</p>
-                <p><strong>Travel History:</strong> ${prepareDataForDisplay(patient.travelHistory)} ${prepareDataForDisplay(patient.travelHistoryExplanation)}</p>
-                <p><strong>Remarks:</strong> ${prepareDataForDisplay(patient.notes)}</p>
-                <p><strong>Submitted At:</strong> ${prepareDataForDisplay(new Date(patient.submittedAt).toLocaleString())}</p>
+                <p><strong>Unique ID:</strong> ${displayValue(patient.code)}</p>
+                <p><strong>Name:</strong> ${displayValue(patient.name)}</p>
+                <p><strong>Date of Birth:</strong> ${displayValue(patient.dob)}</p>
+                <p><strong>Chief Complaints:</strong> ${displayValue(patient.complaints)}</p>
+                <p><strong>Complaint Notes:</strong> ${displayValue(patient.complaintNotes)}</p>
+                <p><strong>Allergies:</strong> ${displayValue(patient.allergies)} ${displayValue(patient.allergyExplanation)}</p>
+                <p><strong>Medicines Taken:</strong> ${displayValue(patient.medicine)} ${displayValue(patient.medicineExplanation)}</p>
+                <p><strong>Chronic Conditions:</strong> ${displayValue(patient.chronicCondition)} ${displayValue(patient.chronicConditionExplanation)}</p>
+                <p><strong>Surgery History:</strong> ${displayValue(patient.surgery)} ${displayValue(patient.surgeryExplanation)}</p>
+                <p><strong>Travel History:</strong> ${displayValue(patient.travelHistory)} ${displayValue(patient.travelHistoryExplanation)}</p>
+                <p><strong>Remarks:</strong> ${displayValue(patient.notes)}</p>
+                <p><strong>Submitted At:</strong> ${displayValue(new Date(patient.submittedAt).toLocaleString())}</p>
             `;
 
             // Update modal content
             patientDetails.innerHTML = detailsHTML;
             patientModal.style.display = "flex"; // Show the modal
+
+            // For debugging purposes
+            console.log('Patient data:', patient);
         })
         .catch(error => {
             console.error("Error fetching patient details:", error);
