@@ -535,72 +535,85 @@
     <!-- Footer -->
     <div class="footer">@ All rights reserved for MPH</div>
        <script>
-    const patientList = document.getElementById("patient-list");
-    const refreshButton = document.getElementById("refresh-button");
-    const userBox = document.getElementById("user-box");
-    const patientModal = document.getElementById("patient-modal");
-    const patientDetails = document.getElementById("patient-details");
-    const closeModal = document.getElementById("close-modal");
-    let currentUser = "";
+   const patientList = document.getElementById("patient-list");
+const refreshButton = document.getElementById("refresh-button");
+const userBox = document.getElementById("user-box");
+const patientModal = document.getElementById("patient-modal");
+const patientDetails = document.getElementById("patient-details");
+const closeModal = document.getElementById("close-modal");
+const searchInput = document.getElementById("search-input"); // Declare once
+let currentUser = "";
 
-    // Fetch username
-    fetch("/get-user")
+// Fetch username
+fetch("/get-user")
+    .then((response) => response.json())
+    .then((data) => {
+        currentUser = data.username;
+        userBox.textContent = `Logged in as: ${currentUser}`;
+        fetchAndRenderPatients(); // Fetch and display patients
+    })
+    .catch((error) => console.error("Error fetching user:", error));
+
+function fetchAndRenderPatients() {
+    const tableBody = document.getElementById("patient-list");
+    let allPatients = []; // To store all fetched patients
+
+    // Fetch patients from the server
+    fetch("/submissions")
         .then((response) => response.json())
         .then((data) => {
-            currentUser = data.username;
-            userBox.textContent = `Logged in as: ${currentUser}`;
-            fetchAndRenderPatients(); // Fetch and display patients
+            allPatients = data; // Store all patients for future filtering
+            renderPatients(allPatients); // Render all patients initially
         })
-        .catch((error) => console.error("Error fetching user:", error));
-
-    function fetchAndRenderPatients() {
-        const searchInput = document.getElementById("search-input");
-        const tableBody = document.getElementById("patient-list");
-        let allPatients = []; // To store all fetched patients
-
-        // Fetch patients from the server
-        fetch("/submissions")
-            .then((response) => response.json())
-            .then((data) => {
-                allPatients = data; // Store all patients for future filtering
-                renderPatients(allPatients); // Render all patients initially
-            })
-            .catch((error) => {
-                console.error("Error fetching patients:", error);
-                tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">Error fetching patients. Try again later.</td></tr>`;
-            });
-
-        // Filter and render patients based on search term
-        searchInput.addEventListener("input", () => {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            const filteredPatients = allPatients.filter((patient) => {
-                const code = patient.code?.toLowerCase() || "";
-                const name = patient.name?.toLowerCase() || "";
-                const complaints = formatComplaints(patient.complaints).join(" ").toLowerCase();
-                const notes = formatNotes(patient.complaintNotes).toLowerCase();
-
-                // Match against ID, Name, Complaints, or Notes
-                return (
-                    code.includes(searchTerm) ||
-                    name.includes(searchTerm) ||
-                    complaints.includes(searchTerm) ||
-                    notes.includes(searchTerm)
-                );
-            });
-            renderPatients(filteredPatients); // Render filtered patients
+        .catch((error) => {
+            console.error("Error fetching patients:", error);
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">Error fetching patients. Try again later.</td></tr>`;
         });
 
-        // Render patients in the table
-    function renderPatients(patients) {
+    // Event listener for search input - only add this once
+    searchInput.addEventListener("input", () => {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const filteredPatients = allPatients.filter((patient) => {
+            const code = patient.code?.toLowerCase() || "";
+            const name = patient.name?.toLowerCase() || "";
+            const complaints = formatComplaints(patient.complaints).join(" ").toLowerCase();
+            const notes = formatNotes(patient.complaintNotes).toLowerCase();
+
+            // Match against ID, Name, Complaints, or Notes
+            return (
+                code.includes(searchTerm) ||
+                name.includes(searchTerm) ||
+                complaints.includes(searchTerm) ||
+                notes.includes(searchTerm)
+            );
+        });
+        renderPatients(filteredPatients); // Render filtered patients
+    });
+}
+
+// Helper functions for formatting data
+function formatComplaints(complaints) {
+    let complaintsArray = Array.isArray(complaints) 
+        ? complaints 
+        : complaints ? [complaints] : [];
+    return complaintsArray;
+}
+
+function formatNotes(notes) {
+    return typeof notes === 'string' ? notes : "";
+}
+
+// Render patients in the table
+function renderPatients(patients) {
+    const tableBody = document.getElementById("patient-list");
     tableBody.innerHTML = ""; // Clear existing rows
 
     if (!patients || patients.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No patients found</td></tr>`;
         return;
     }
-
-    // Sort patients by submission date (newest first)
-    patients.sort(
+   // Sort patients by submission date (newest first)
+patients.sort(
         (a, b) => new Date(b.submittedAt) - new Date(a.submittedAt)
     );
 
