@@ -638,11 +638,14 @@ if (!isNaN(dob.getTime())) {
 }
 
             // Complaints
-            const chiefComplaints = (patient.complaints || [])
-              .concat(patient.complaintNotes || "")
-              .filter(Boolean)
-              .map((complaint) => complaint.replace(/remove/gi, "").trim())
-              .join(", ");
+           const chiefComplaints = (patient.complaints || [])
+  .concat(patient.complaintNotes || "")
+  .filter(Boolean)
+  .map((complaint) =>
+    typeof complaint === "string" ? complaint.replace(/remove/gi, "").trim() : ""
+  )
+  .filter(Boolean) // Remove empty strings
+  .join(", ");
             const mapArabicToEnglish = (value) =>
               value === "لا" ? "No" : value;
 
@@ -1000,7 +1003,7 @@ async function downloadPatientPDF(patientCode) {
         console.error("Error generating PDF:", error);
         alert("Unable to generate PDF. Please try again.");
     }
-}
+}     
     </script>
   </body>
 </html>
