@@ -114,9 +114,12 @@ const translateText = async (text, targetLanguage = 'en') => {
         throw new Error('Azure Translator API key or region is missing.');
     }
 
+    const apiUrl = `${endpoint}translate?api-version=3.0&to=${targetLanguage}`;
+    console.log('Translation API URL:', apiUrl);
+
     try {
         const response = await axios.post(
-            `${endpoint}?api-version=3.0&to=${targetLanguage}`,
+            apiUrl,
             [{ Text: text }],
             {
                 headers: {
