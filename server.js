@@ -154,7 +154,6 @@ app.get('/submission/:id', requireAuth, async (req, res) => {
     }
 });
 
-// Endpoint to handle form submissions
 app.post('/submit', async (req, res) => {
     const {
         code,
@@ -177,7 +176,7 @@ app.post('/submit', async (req, res) => {
     } = req.body;
 
     try {
-        // Translate necessary fields to English
+        // Translate fields to English
         const translatedName = await translateText(name || '', 'en');
         const translatedComplaints = complaints
             ? await Promise.all(complaints.map((c) => translateText(c, 'en')))
