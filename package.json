@@ -20,7 +20,7 @@
     "corex-autotable": "^3.5.25",
     "pg": "^8.11.0",
     "dotenv": "^16.0.3",
-    npm install axios
+    "axios": "^1.4.0"
   },
   "engines": {
     "node": "18.x"
