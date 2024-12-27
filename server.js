@@ -106,30 +106,25 @@ app.get('/submissions', requireAuth, async (req, res) => {
 });
 
 const translateText = async (text, targetLanguage = 'en') => {
-    const endpoint = process.env.AZURE_TRANSLATOR_ENDPOINT || 'https://api.cognitive.microsofttranslator.com/translate';
+    const endpoint = `https://${process.env.AZURE_REGION}.api.cognitive.microsofttranslator.com/translate`;
     const subscriptionKey = process.env.AZURE_TRANSLATOR_KEY;
-    const region = process.env.AZURE_REGION;
 
-    if (!subscriptionKey || !region) {
+    if (!subscriptionKey || !process.env.AZURE_REGION) {
         throw new Error('Azure Translator API key or region is missing.');
     }
 
-    const apiUrl = `${endpoint}translate?api-version=3.0&to=${targetLanguage}`;
-    console.log('Translation API URL:', apiUrl);
-
     try {
         const response = await axios.post(
-            apiUrl,
+            `${endpoint}?api-version=3.0&to=${targetLanguage}`,
             [{ Text: text }],
             {
                 headers: {
                     'Ocp-Apim-Subscription-Key': subscriptionKey,
-                    'Ocp-Apim-Subscription-Region': region,
+                    'Ocp-Apim-Subscription-Region': process.env.AZURE_REGION,
                     'Content-Type': 'application/json',
                 },
             }
         );
-
         return response.data[0].translations[0].text; // Translated text
     } catch (error) {
         console.error('Error during translation:', error.response?.data || error.message);
