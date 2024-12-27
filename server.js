@@ -1,3 +1,4 @@
+const axios = require('axios');
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -104,6 +105,30 @@ app.get('/submissions', requireAuth, async (req, res) => {
     }
 });
 
+const translateText = async (text, targetLanguage = 'en') => {
+    const endpoint = 'https://api.cognitive.microsofttranslator.com/translate';
+    const subscriptionKey = process.env.AZURE_TRANSLATOR_KEY; // Use your Azure Translator key
+    const region = process.env.AZURE_REGION; // Your Azure region
+
+    try {
+        const response = await axios.post(
+            `${endpoint}?api-version=3.0&to=${targetLanguage}`,
+            [{ Text: text }],
+            {
+                headers: {
+                    'Ocp-Apim-Subscription-Key': subscriptionKey,
+                    'Ocp-Apim-Subscription-Region': region,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        return response.data[0].translations[0].text; // Translated text
+    } catch (error) {
+        console.error('Error during translation:', error.response?.data || error.message);
+        throw new Error('Translation failed.');
+    }
+};
 // Endpoint to fetch full form data for a specific patient
 app.get('/submission/:id', requireAuth, async (req, res) => {
     const patientId = req.params.id;
@@ -147,33 +172,54 @@ app.post('/submit', async (req, res) => {
         travelHistoryExplanation,
     } = req.body;
 
-    const query = `
-        INSERT INTO patients (code, name, dob, pain_score, complaints, complaint_notes, notes,
-            allergies, allergy_explanation, medicine, medicine_explanation, chronic_condition,
-            chronic_condition_explanation, surgery, surgery_explanation, travel_history, travel_history_explanation)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-    `;
-
     try {
+        // Translate necessary fields to English
+        const translatedName = await translateText(name || '', 'en');
+        const translatedComplaints = complaints
+            ? await Promise.all(complaints.map((c) => translateText(c, 'en')))
+            : [];
+        const translatedComplaintNotes = await translateText(complaintNotes || '', 'en');
+        const translatedNotes = await translateText(notes || '', 'en');
+        const translatedAllergyExplanation = await translateText(allergyExplanation || '', 'en');
+        const translatedMedicineExplanation = await translateText(medicineExplanation || '', 'en');
+        const translatedChronicConditionExplanation = await translateText(
+            chronicConditionExplanation || '',
+            'en'
+        );
+        const translatedSurgeryExplanation = await translateText(surgeryExplanation || '', 'en');
+        const translatedTravelHistoryExplanation = await translateText(
+            travelHistoryExplanation || '',
+            'en'
+        );
+
+        // Insert into the database
+        const query = `
+            INSERT INTO patients (code, name, dob, pain_score, complaints, complaint_notes, notes,
+                allergies, allergy_explanation, medicine, medicine_explanation, chronic_condition,
+                chronic_condition_explanation, surgery, surgery_explanation, travel_history, travel_history_explanation)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        `;
+
         await pool.query(query, [
             code || `MPHT-${Date.now().toString(36).toUpperCase()}`,
-            name,
+            translatedName,
             dob,
             painScore,
-            JSON.stringify(complaints),
-            complaintNotes,
-            notes,
+            JSON.stringify(translatedComplaints),
+            translatedComplaintNotes,
+            translatedNotes,
             allergies,
-            allergyExplanation,
+            translatedAllergyExplanation,
             medicine,
-            medicineExplanation,
+            translatedMedicineExplanation,
             chronicCondition,
-            chronicConditionExplanation,
+            translatedChronicConditionExplanation,
             surgery,
-            surgeryExplanation,
+            translatedSurgeryExplanation,
             travelHistory,
-            travelHistoryExplanation,
+            translatedTravelHistoryExplanation,
         ]);
+
         res.status(200).json({ message: 'Patient submitted successfully!' });
     } catch (err) {
         console.error('Error inserting patient:', err);
