@@ -133,12 +133,7 @@ const translateText = async (text, targetLanguage = 'en') => {
         throw new Error('Translation failed.');
     }
 };
-        return response.data[0].translations[0].text; // Translated text
-    } catch (error) {
-        console.error('Error during translation:', error.response?.data || error.message);
-        throw new Error('Translation failed.');
-    }
-};
+
 // Endpoint to fetch full form data for a specific patient
 app.get('/submission/:id', requireAuth, async (req, res) => {
     const patientId = req.params.id;
