@@ -106,9 +106,13 @@ app.get('/submissions', requireAuth, async (req, res) => {
 });
 
 const translateText = async (text, targetLanguage = 'en') => {
-    const endpoint = 'https://api.cognitive.microsofttranslator.com/translate';
-    const subscriptionKey = process.env.AZURE_TRANSLATOR_KEY; // Use your Azure Translator key
-    const region = process.env.AZURE_REGION; // Your Azure region
+    const endpoint = process.env.AZURE_TRANSLATOR_ENDPOINT || 'https://api.cognitive.microsofttranslator.com/translate';
+    const subscriptionKey = process.env.AZURE_TRANSLATOR_KEY;
+    const region = process.env.AZURE_REGION;
+
+    if (!subscriptionKey || !region) {
+        throw new Error('Azure Translator API key or region is missing.');
+    }
 
     try {
         const response = await axios.post(
@@ -123,6 +127,12 @@ const translateText = async (text, targetLanguage = 'en') => {
             }
         );
 
+        return response.data[0].translations[0].text; // Translated text
+    } catch (error) {
+        console.error('Error during translation:', error.response?.data || error.message);
+        throw new Error('Translation failed.');
+    }
+};
         return response.data[0].translations[0].text; // Translated text
     } catch (error) {
         console.error('Error during translation:', error.response?.data || error.message);
