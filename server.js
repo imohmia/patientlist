@@ -106,32 +106,33 @@ app.get('/submissions', requireAuth, async (req, res) => {
 });
 
 const translateText = async (text, targetLanguage = 'en') => {
-    const endpoint = `https://${process.env.AZURE_REGION}.api.cognitive.microsofttranslator.com/translate`;
-    const subscriptionKey = process.env.AZURE_TRANSLATOR_KEY;
+    const endpoint = 'https://api.cognitive.microsofttranslator.com/translate?api-version=3.0';
+    const subscriptionKey = process.env.AZURE_TRANSLATOR_KEY; // Ensure your key is in the `.env` file
+    const region = process.env.AZURE_REGION; // Add your region here
 
-    if (!subscriptionKey || !process.env.AZURE_REGION) {
+    if (!subscriptionKey || !region) {
         throw new Error('Azure Translator API key or region is missing.');
     }
 
     try {
         const response = await axios.post(
-            `${endpoint}?api-version=3.0&to=${targetLanguage}`,
+            `${endpoint}&to=${targetLanguage}`,
             [{ Text: text }],
             {
                 headers: {
                     'Ocp-Apim-Subscription-Key': subscriptionKey,
-                    'Ocp-Apim-Subscription-Region': process.env.AZURE_REGION,
+                    'Ocp-Apim-Subscription-Region': region,
                     'Content-Type': 'application/json',
                 },
             }
         );
-        return response.data[0].translations[0].text; // Translated text
+
+        return response.data[0].translations[0].text; // Extract the translated text
     } catch (error) {
         console.error('Error during translation:', error.response?.data || error.message);
         throw new Error('Translation failed.');
     }
 };
-
 // Endpoint to fetch full form data for a specific patient
 app.get('/submission/:id', requireAuth, async (req, res) => {
     const patientId = req.params.id;
