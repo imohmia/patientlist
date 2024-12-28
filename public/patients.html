@@ -472,7 +472,12 @@
       #search-input {
         padding-left: 40px; /* Add space for the icon */
       }
-      
+      /* Hover effect for rows */
+tr:hover {
+  background-color: #f0f0f0; /* Light gray */
+  cursor: pointer; /* Indicates clickable rows */
+  transition: background-color 0.3s ease;
+}
     </style>
   </head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -604,6 +609,25 @@
 
         patients.forEach((patient) => {
             const row = document.createElement("tr");
+          
+ // Highlight row based on complaints
+        const complaintsLower = (patient.complaints || []).join(", ").toLowerCase();
+        if (
+            complaintsLower.includes("chest pain") ||
+            complaintsLower.includes("shortness of breath")
+        ) {
+            row.classList.add("red-highlight");
+        } else if (
+            patient.complaints.length > 3 ||
+            complaintsLower.includes("fever")
+        ) {
+            row.classList.add("yellow-highlight");
+        } else {
+            row.classList.add("green-highlight");
+        }
+
+        // Add click event to row
+        row.addEventListener("click", () => viewPatientDetails(patient.code));
 
             // Calculate age
             const dob = new Date(patient.dob);
