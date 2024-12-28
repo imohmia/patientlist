@@ -473,12 +473,6 @@
         padding-left: 40px; /* Add space for the icon */
       }
       
-      /* Hover effect for rows */
-tr:hover {
-  background-color: #f0f0f0; /* Light gray */
-  cursor: pointer; /* Indicates clickable rows */
-  transition: background-color 0.3s ease;
-}      
     </style>
   </head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -597,102 +591,89 @@ tr:hover {
     });
 
     // Render patients in the table
-function renderPatients(patients) {
-    tableBody.innerHTML = ""; // Clear existing rows
+    function renderPatients(patients) {
+        tableBody.innerHTML = ""; // Clear existing rows
 
-    if (!patients || patients.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No patients found</td></tr>`;
-        return;
-    }
-
-    // Sort patients by submission date (newest first)
-    patients.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
-
-    patients.forEach((patient) => {
-        const row = document.createElement("tr");
-
-        // Calculate age
-        const dob = new Date(patient.dob);
-        const today = new Date();
-        let ageText = "N/A";
-        let ageSticker = "";
-
-        if (!isNaN(dob.getTime())) {
-            const diffInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
-            const diffInYears = Math.floor(diffInDays / 365.25);
-
-            if (diffInDays < 30) {
-                ageText = `${diffInDays} days`;
-                ageSticker = "👶 Neonate";
-            } else if (diffInDays < 365) {
-                ageText = `${Math.floor(diffInDays / 30.44)} months`;
-                ageSticker = "🧒 Infant";
-            } else {
-                ageText = `${diffInYears} years`;
-                ageSticker = diffInYears > 60 ? "👴 Geriatric" : diffInYears < 13 ? "🧒 Child" : "🧑 Adult";
-            }
+        if (!patients || patients.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No patients found</td></tr>`;
+            return;
         }
 
-        // Complaints - ensuring each item is treated as a string
-        const chiefComplaints = (patient.complaints || [])
-            .concat(patient.complaint_notes ? [patient.complaint_notes] : []) // Use correct API field name
-            .filter(Boolean) // Remove any falsy values (e.g., null, undefined, empty strings)
-            .map((item) => {
-                return typeof item === 'string' 
-                    ? item.replace(/remove/gi, "").trim() 
-                    : (item ? item.toString().replace(/remove/gi, "").trim() : "");
-            })
-            .join(", ") || "N/A"; // Default to "N/A" if the resulting string is empty
+        // Sort patients by submission date (newest first)
+        patients.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
 
-        // Highlight row based on complaints
-        const complaintsLower = chiefComplaints.toLowerCase();
-        if (
-            complaintsLower.includes("chest pain") ||
-            complaintsLower.includes("shortness of breath")
-        ) {
-            row.classList.add("red-highlight");
-        } else if (
-            chiefComplaints.split(",").length > 3 ||
-            complaintsLower.includes("fever")
-        ) {
-            row.classList.add("yellow-highlight");
-        } else {
-            row.classList.add("green-highlight");
-        }
+        patients.forEach((patient) => {
+            const row = document.createElement("tr");
 
-        // Add hover effect and clickable behavior
-        row.style.cursor = "pointer"; // Change cursor to indicate clickable row
-        row.addEventListener("click", () => viewPatientDetails(patient.code));
-        row.addEventListener("mouseenter", () => {
-            row.style.backgroundColor = "#f0f0f0"; // Light gray on hover
-        });
-        row.addEventListener("mouseleave", () => {
-            row.style.backgroundColor = ""; // Reset background color
-        });
+            // Calculate age
+            const dob = new Date(patient.dob);
+            const today = new Date();
+            let ageText = "N/A";
+            let ageSticker = "";
 
-        // Render row content
-        row.innerHTML = `
-            <td>${patient.code || "N/A"}</td>
-            <td>${patient.name || "N/A"}</td>
-            <td>${patient.dob || "N/A"} (${ageText}) ${ageSticker}</td>
-            <td>${chiefComplaints || "N/A"}</td>
-            <td>${patient.notes || "N/A"}</td>
-            <td class="actions-cell">
-                <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
-                    <i class="fas fa-eye" title="View Details"></i>
-                </button>
-                ${
-                    ["seyed", "aldrin"].includes(currentUser)
-                        ? `<button class="remove-btn" onclick="removePatient('${patient.code}')"><i class="fas fa-trash" title="Remove Patient"></i></button>`
-                        : ""
+            if (!isNaN(dob.getTime())) {
+                const diffInDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
+                const diffInYears = Math.floor(diffInDays / 365.25);
+
+                if (diffInDays < 30) {
+                    ageText = `${diffInDays} days`;
+                    ageSticker = "👶 Neonate";
+                } else if (diffInDays < 365) {
+                    ageText = `${Math.floor(diffInDays / 30.44)} months`;
+                    ageSticker = "🧒 Infant";
+                } else {
+                    ageText = `${diffInYears} years`;
+                    ageSticker = diffInYears > 60 ? "👴 Geriatric" : diffInYears < 13 ? "🧒 Child" : "🧑 Adult";
                 }
-                <button class="download-btn" onclick="downloadPatientPDF('${patient.code}')">
-                    <i class="fas fa-download" title="Download"></i>
-                </button>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
+            }
+
+           // Complaints - ensuring each item is treated as a string
+const chiefComplaints = (patient.complaints || [])
+    .concat(patient.complaint_notes ? [patient.complaint_notes] : []) // Use correct API field name
+    .filter(Boolean) // Remove any falsy values (e.g., null, undefined, empty strings)
+    .map((item) => {
+        return typeof item === 'string' 
+            ? item.replace(/remove/gi, "").trim() 
+            : (item ? item.toString().replace(/remove/gi, "").trim() : "");
+    })
+    .join(", ") || "N/A"; // Default to "N/A" if the resulting string is empty
+
+            // Highlight row based on complaints
+            const complaintsLower = chiefComplaints.toLowerCase();
+            if (
+                complaintsLower.includes("chest pain") ||
+                complaintsLower.includes("shortness of breath")
+            ) {
+                row.classList.add("red-highlight");
+            } else if (
+                chiefComplaints.split(",").length > 3 ||
+                complaintsLower.includes("fever")
+            ) {
+                row.classList.add("yellow-highlight");
+            } else {
+                row.classList.add("green-highlight");
+            }
+
+            // Render row
+            row.innerHTML = `
+                <td>${patient.code || "N/A"}</td>
+                <td>${patient.name || "N/A"}</td>
+                <td>${patient.dob || "N/A"} (${ageText}) ${ageSticker}</td>
+                <td>${chiefComplaints || "N/A"}</td>
+                <td>${patient.notes || "N/A"}</td>
+                <td class="actions-cell">
+                    <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
+                        <i class="fas fa-eye" title="View Details"></i>
+                    </button>
+                    ${["seyed", "aldrin"].includes(currentUser) ? `<button class="remove-btn" onclick="removePatient('${patient.code}')"><i class="fas fa-trash" title="Remove Patient"></i></button>` : ""}
+                    <button class="download-btn" onclick="downloadPatientPDF('${patient.code}')">
+                        <i class="fas fa-download" title="Download"></i>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
 }
       // Call the function to fetch and render patients on page load
       fetchAndRenderPatients();
@@ -762,11 +743,13 @@ function viewPatientDetails(patientCode) {
           patientModal.style.display = "none";
         }
       });
-        
+      const searchInput = document.getElementById("search-input");
+
       searchInput.addEventListener("input", () => {
         const searchTerm = searchInput.value.toLowerCase().trim(); // Get the search term
         filterPatients(searchTerm); // Call the filter function
       });
+      let allPatients = []; // Store all patients globally
 
       function filterPatients(searchTerm) {
         const filteredPatients = allPatients.filter((patient) => {
