@@ -603,31 +603,22 @@ tr:hover {
             tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No patients found</td></tr>`;
             return;
         }
-
+      
+ // Add hover effect and clickable behavior
+        row.style.cursor = "pointer"; // Change cursor to indicate clickable row
+        row.addEventListener("click", () => viewPatientDetails(patient.code));
+        row.addEventListener("mouseenter", () => {
+            row.style.backgroundColor = "#f0f0f0"; // Light gray on hover
+        });
+        row.addEventListener("mouseleave", () => {
+            row.style.backgroundColor = ""; // Reset background color
+        });
+      
         // Sort patients by submission date (newest first)
         patients.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
 
         patients.forEach((patient) => {
             const row = document.createElement("tr");
-          
- // Highlight row based on complaints
-        const complaintsLower = (patient.complaints || []).join(", ").toLowerCase();
-        if (
-            complaintsLower.includes("chest pain") ||
-            complaintsLower.includes("shortness of breath")
-        ) {
-            row.classList.add("red-highlight");
-        } else if (
-            patient.complaints.length > 3 ||
-            complaintsLower.includes("fever")
-        ) {
-            row.classList.add("yellow-highlight");
-        } else {
-            row.classList.add("green-highlight");
-        }
-
-        // Add click event to row
-        row.addEventListener("click", () => viewPatientDetails(patient.code));
 
             // Calculate age
             const dob = new Date(patient.dob);
