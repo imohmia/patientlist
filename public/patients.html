@@ -762,13 +762,11 @@ function viewPatientDetails(patientCode) {
           patientModal.style.display = "none";
         }
       });
-      const searchInput = document.getElementById("search-input");
-
+        
       searchInput.addEventListener("input", () => {
         const searchTerm = searchInput.value.toLowerCase().trim(); // Get the search term
         filterPatients(searchTerm); // Call the filter function
       });
-      let allPatients = []; // Store all patients globally
 
       function filterPatients(searchTerm) {
         const filteredPatients = allPatients.filter((patient) => {
