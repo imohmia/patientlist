@@ -691,27 +691,6 @@ function renderPatients(patients) {
         tableBody.appendChild(row);
     });
 }
-          
-            // Render row
-            row.innerHTML = `
-                <td>${patient.code || "N/A"}</td>
-                <td>${patient.name || "N/A"}</td>
-                <td>${patient.dob || "N/A"} (${ageText}) ${ageSticker}</td>
-                <td>${chiefComplaints || "N/A"}</td>
-                <td>${patient.notes || "N/A"}</td>
-                <td class="actions-cell">
-                    <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
-                        <i class="fas fa-eye" title="View Details"></i>
-                    </button>
-                    ${["seyed", "aldrin"].includes(currentUser) ? `<button class="remove-btn" onclick="removePatient('${patient.code}')"><i class="fas fa-trash" title="Remove Patient"></i></button>` : ""}
-                    <button class="download-btn" onclick="downloadPatientPDF('${patient.code}')">
-                        <i class="fas fa-download" title="Download"></i>
-                    </button>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
-}
       // Call the function to fetch and render patients on page load
       fetchAndRenderPatients();
 
