@@ -755,24 +755,31 @@ function viewPatientDetails(patientCode) {
             alert("Unable to fetch patient details. Please try again.");
         });
 }
-       // Close modal
-      closeModal.addEventListener("click", () => {
+
+// Handle closing the modal
+function handleCloseModal(event) {
+    const modalContent = document.querySelector(".modal-content");
+
+    // Check if the click is outside the modal content or on the close button
+    if (event.target === patientModal || event.target === document.getElementById("close-modal")) {
         patientModal.style.display = "none";
-      });
+    }
+}
 
-      // Optional: Close the modal if the user clicks outside the modal content
-      window.addEventListener("click", (event) => {
-        if (event.target === patientModal) {
-          patientModal.style.display = "none";
-        }
-      });
-      const searchInput = document.getElementById("search-input");
+// Attach event listeners for closing the modal
+document.getElementById("close-modal").addEventListener("click", handleCloseModal);
+window.addEventListener("click", handleCloseModal);
 
-      searchInput.addEventListener("input", () => {
-        const searchTerm = searchInput.value.toLowerCase().trim(); // Get the search term
-        filterPatients(searchTerm); // Call the filter function
-      });
-      let allPatients = []; // Store all patients globally
+// Search bar functionality
+const searchInput = document.getElementById("search-input");
+
+searchInput.addEventListener("input", () => {
+    const searchTerm = searchInput.value.toLowerCase().trim(); // Get the search term
+    filterPatients(searchTerm); // Call the filter function
+});
+
+let allPatients = []; // Store all patients globally
+
 
       function filterPatients(searchTerm) {
         const filteredPatients = allPatients.filter((patient) => {
