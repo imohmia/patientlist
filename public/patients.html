@@ -264,11 +264,18 @@
         height: 100%; /* Matches the cell height */
         box-sizing: border-box; /* Ensures padding is included in height/width */
       }
-/* Add hover effect for table rows */
-tbody tr:hover {
-  background-color: #f0f0f0; /* Light gray background on hover */
-  cursor: pointer; /* Indicates clickable rows */
-  transition: background-color 0.3s ease; /* Smooth transition */
+
+/* Stylish glowing row hover */
+table tr {
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+table tr:hover {
+  background-color: #f3f9ff; /* Light blue background */
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4); /* Subtle blue glow */
+  border-left: 5px solid #007bff; /* Blue border to highlight */
+  transform: scale(1.02); /* Slightly enlarge the row */
+  cursor: pointer; /* Change cursor to pointer */
 }
 
 /* Add active/click state styling for rows */
