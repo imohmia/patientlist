@@ -701,7 +701,12 @@ const chiefComplaints = (patient.complaints || [])
       fetchAndRenderPatients();
 
 
+let isModalOpen = false; // Flag to track modal state
+
 function viewPatientDetails(patientCode) {
+    if (isModalOpen) return; // Prevent multiple calls if the modal is already open
+    isModalOpen = true; // Set the flag to true
+
     fetch(`/submission/${patientCode}`)
         .then(response => {
             if (!response.ok) {
@@ -747,8 +752,7 @@ function viewPatientDetails(patientCode) {
             patientDetails.innerHTML = detailsHTML;
             patientModal.style.display = "flex"; // Show the modal
 
-            // Debugging log
-            console.log('Displayed patient data:', patient);
+            console.log('Displayed patient data:', patient); // Debugging log
         })
         .catch(error => {
             console.error("Error fetching patient details:", error);
@@ -756,19 +760,31 @@ function viewPatientDetails(patientCode) {
         });
 }
 
-// Handle closing the modal
+// Close modal function
 function handleCloseModal(event) {
     const modalContent = document.querySelector(".modal-content");
 
-    // Check if the click is outside the modal content or on the close button
+    // Close modal if clicking outside the content or on the close button
     if (event.target === patientModal || event.target === document.getElementById("close-modal")) {
         patientModal.style.display = "none";
+        isModalOpen = false; // Reset the flag when the modal is closed
     }
 }
 
-// Attach event listeners for closing the modal
+// Attach event listeners
 document.getElementById("close-modal").addEventListener("click", handleCloseModal);
 window.addEventListener("click", handleCloseModal);
+
+// Event listener for table rows
+document.getElementById("patient-list").addEventListener("click", (event) => {
+    const row = event.target.closest("tr"); // Get the clicked row
+    if (!row) return; // Ignore clicks outside rows
+
+    const patientId = row.querySelector("td:first-child")?.textContent.trim(); // Assume the ID is in the first cell
+    if (patientId) {
+        viewPatientDetails(patientId); // Call the function to view patient details
+    }
+});
 
 // Search bar functionality
 const searchInput = document.getElementById("search-input");
