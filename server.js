@@ -258,17 +258,24 @@ app.delete('/delete-patient/:id', requireAuth, async (req, res) => {
     }
 });
 // mark as viewed 
-app.post("/mark-as-viewed/:patientCode", (req, res) => {
+app.post("/mark-as-viewed/:patientCode", requireAuth, async (req, res) => {
     const patientCode = req.params.patientCode;
 
-    // Find and update the patient's "viewed" status
-    const patient = patients.find(p => p.code === patientCode);
-    if (!patient) {
-        return res.status(404).send({ message: "Patient not found." });
-    }
+    try {
+        const result = await pool.query(
+            "UPDATE patients SET viewed = TRUE WHERE code = $1 RETURNING *",
+            [patientCode]
+        );
 
-    patient.viewed = true; // Mark as viewed
-    res.status(200).send({ message: "Patient marked as viewed." });
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: "Patient not found." });
+        }
+
+        res.status(200).json({ message: "Patient marked as viewed." });
+    } catch (err) {
+        console.error("Error marking patient as viewed:", err);
+        res.status(500).json({ message: "Failed to mark patient as viewed." });
+    }
 });
 
 // Endpoint to get logged-in username
