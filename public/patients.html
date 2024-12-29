@@ -490,7 +490,36 @@ tbody tr:active {
       #search-input {
         padding-left: 40px; /* Add space for the icon */
       }
-      
+      .mark-viewed-btn {
+    background: linear-gradient(90deg, #6a11cb, #2575fc); /* Stylish gradient */
+    color: white;
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 25px;
+    box-shadow: 0 4px 10px rgba(106, 17, 203, 0.5);
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mark-viewed-btn:hover {
+    transform: scale(1.05); /* Slight zoom effect */
+    box-shadow: 0 6px 15px rgba(37, 117, 252, 0.6); /* Glow effect */
+}
+
+.mark-viewed-btn:active {
+    transform: scale(0.95); /* Shrink effect on click */
+    box-shadow: 0 3px 8px rgba(37, 117, 252, 0.4); /* Reduced shadow */
+}
+      .viewed-status {
+    text-align: center;
+    font-size: 20px;
+    color: #28a745; /* Green color */
+    font-weight: bold;
+    text-shadow: 0 0 10px #28a745, 0 0 20px #28a745; /* Glow effect */
+}
+
     </style>
   </head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -692,7 +721,7 @@ const chiefComplaints = (patient.complaints || [])
     <td>${patient.notes || "N/A"}</td>
     <td>${patient.viewed ? "✔️" : ""}</td>
     <td class="actions-cell">
-        <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
+         <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
             <i class="fas fa-eye" title="View Details"></i>
         </button>
         ${
@@ -759,6 +788,7 @@ function viewPatientDetails(patientCode) {
                 <p><strong>Travel History:</strong> ${displayValue(patient.travel_history)} (${displayValue(patient.travel_history_explanation)})</p>
                 <p><strong>Remarks:</strong> ${displayValue(patient.notes)}</p>
                 <p><strong>Submitted At:</strong> ${formattedSubmittedAt}</p>
+                <button id="mark-as-viewed" class="mark-viewed-btn">Mark as Viewed</button>
             `;
 
              // Update modal content
