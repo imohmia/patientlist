@@ -513,24 +513,18 @@ tbody tr:active {
     box-shadow: 0 3px 8px rgba(37, 117, 252, 0.4); /* Reduced shadow */
 }
       .viewed-status {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    text-align: center;
     font-size: 18px;
     font-weight: bold;
-    color: white;
-    width: 30px;
-    height: 30px;
-    background: linear-gradient(145deg, #28a745, #1e7e34); /* Gradient background */
-    border-radius: 50%; /* Circular shape */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), inset 0 -2px 4px rgba(255, 255, 255, 0.3); /* 3D effect */
-    text-shadow: 0 0 10px rgba(40, 167, 69, 0.8), 0 0 20px rgba(40, 167, 69, 0.6); /* Glow effect */
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    color: #28a745; /* Green color */
+    text-shadow: 0 0 5px rgba(40, 167, 69, 0.8), 0 0 10px rgba(40, 167, 69, 0.6); /* Glow effect */
+    padding: 5px;
+    font-family: 'Poppins', sans-serif;
 }
 
 .viewed-status:hover {
-    transform: scale(1.1); /* Slight zoom on hover */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), 0 0 15px rgba(40, 167, 69, 0.8); /* Enhanced glow */
+    text-shadow: 0 0 10px rgba(40, 167, 69, 1), 0 0 15px rgba(40, 167, 69, 0.8); /* Enhanced glow */
+    transform: scale(1.05); /* Slight zoom on hover */
 }
 
 .viewed-status span {
@@ -573,11 +567,12 @@ tbody tr:active {
       <thead>
         <tr>
           <th>Unique ID</th>
-          <th>Name</th>
-          <th>Date of Birth</th>
-          <th>Chief Complaints</th>
-          <th>Remarks</th>
-          <th>Actions</th>
+        <th>Name</th>
+        <th>Date of Birth</th>
+        <th>Chief Complaints</th>
+        <th>Remarks</th>
+        <th>Viewed</th> <!-- New column for "Viewed" -->
+        <th>Actions</th>
         </tr>
       </thead>
       <tbody id="patient-list">
@@ -735,7 +730,7 @@ const chiefComplaints = (patient.complaints || [])
     <td>${(patient.complaints || []).join(", ") || "N/A"}</td>
     <td>${patient.notes || "N/A"}</td>
     <td class="viewed-status">
-        ${patient.viewed ? '<div class="viewed-status"><span>✔️</span></div>' : ""}
+        ${patient.viewed ? '✔️' : ''} <!-- Display tick if viewed -->
     </td>
     <td class="actions-cell">
         <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
