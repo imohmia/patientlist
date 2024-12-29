@@ -490,7 +490,26 @@ tbody tr:active {
       #search-input {
         padding-left: 40px; /* Add space for the icon */
       }
-      
+      .mark-viewed-btn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mark-viewed-btn:hover {
+  background-color: #218838;
+  transform: scale(1.05); /* Slight zoom effect */
+}
     </style>
   </head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -531,6 +550,7 @@ tbody tr:active {
           <th>Date of Birth</th>
           <th>Chief Complaints</th>
           <th>Remarks</th>
+          <th>Viewed</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -540,15 +560,17 @@ tbody tr:active {
     </table>
     <!-- Updated Modal for viewing full patient details -->
     <div class="modal" id="patient-modal">
-      <div class="modal-content">
-        <span class="close-btn" id="close-modal">&times;</span>
-        <div class="modal-header">
-          <h2>Patient Details</h2>
-        </div>
-        <div id="patient-details" class="details-container">
-          <!-- Patient details will be dynamically populated -->
-        </div>
-      </div>
+  <div class="modal-content">
+    <span class="close-btn" id="close-modal">&times;</span>
+    <div class="modal-header">
+      <h2>Patient Details</h2>
+    </div>
+    <div id="patient-details" class="details-container">
+      <!-- Patient details will be dynamically populated -->
+    </div>
+    <button id="mark-as-viewed" class="mark-viewed-btn">Mark as Viewed</button>
+  </div>
+</div>
     </div>
     <!-- Footer -->
     <div class="footer">@ All rights reserved for MPH</div>
@@ -766,7 +788,31 @@ function viewPatientDetails(patientCode) {
             alert("Unable to fetch patient details. Please try again.");
         });
 }
-
+// Mark Patient as Viewed
+function markPatientAsViewed(patientCode) {
+    fetch(`/mark-as-viewed/${patientCode}`, { method: "POST" })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("Failed to mark as viewed.");
+            }
+            return response.json();
+        })
+        .then(() => {
+            // Update the table row
+            const row = document.querySelector(`tr[data-patient-id="${patientCode}"]`);
+            if (row) {
+                const viewedCell = row.querySelector(".viewed-status");
+                viewedCell.textContent = "✔️"; // Indicate patient has been viewed
+            }
+            alert("Patient marked as viewed.");
+            document.getElementById("patient-modal").style.display = "none";
+            isModalOpen = false; // Reset flag
+        })
+        .catch((error) => {
+            console.error("Error marking patient as viewed:", error);
+            alert("Unable to mark patient as viewed. Please try again.");
+        });
+}
 // Close modal function
 function handleCloseModal(event) {
     const modalContent = document.querySelector(".modal-content");
