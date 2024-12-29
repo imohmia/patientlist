@@ -257,13 +257,20 @@ app.delete('/delete-patient/:id', requireAuth, async (req, res) => {
         res.status(500).json({ message: 'Failed to remove patient.' });
     }
 });
+// mark as viewed 
 app.post("/mark-as-viewed/:patientCode", (req, res) => {
     const patientCode = req.params.patientCode;
-    // Assume we have a database update function
-    updatePatient(patientCode, { viewed: true })
-        .then(() => res.status(200).send({ success: true }))
-        .catch((err) => res.status(500).send({ error: "Failed to mark as viewed" }));
+
+    // Find and update the patient's "viewed" status
+    const patient = patients.find(p => p.code === patientCode);
+    if (!patient) {
+        return res.status(404).send({ message: "Patient not found." });
+    }
+
+    patient.viewed = true; // Mark as viewed
+    res.status(200).send({ message: "Patient marked as viewed." });
 });
+
 // Endpoint to get logged-in username
 app.get('/get-user', (req, res) => {
     if (req.session.isAuthenticated) {
