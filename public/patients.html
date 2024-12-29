@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Patient List</title>
     <style>
-      /* Hover effect for rows */
-tr:hover {
-  background-color: #f0f0f0; /* Light gray */
-  cursor: pointer; /* Indicates clickable rows */
-  transition: background-color 0.3s ease;
-}
       /* Row highlight colors */
       .red-highlight {
         background: linear-gradient(
@@ -659,16 +653,7 @@ const chiefComplaints = (patient.complaints || [])
             } else {
                 row.classList.add("green-highlight");
             }
-// Add hover effect and clickable behavior
-        row.style.cursor = "pointer"; // Change cursor to indicate clickable row
-        row.addEventListener("click", () => viewPatientDetails(patient.code));
-        row.addEventListener("mouseenter", () => {
-            row.style.backgroundColor = "#f0f0f0"; // Light gray on hover
-        });
-        row.addEventListener("mouseleave", () => {
-            row.style.backgroundColor = ""; // Reset background color
-        });
-          
+
             // Render row
             row.innerHTML = `
                 <td>${patient.code || "N/A"}</td>
