@@ -513,13 +513,30 @@ tbody tr:active {
     box-shadow: 0 3px 8px rgba(37, 117, 252, 0.4); /* Reduced shadow */
 }
       .viewed-status {
-    text-align: center;
-    font-size: 20px;
-    color: #28a745; /* Green color */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
     font-weight: bold;
-    text-shadow: 0 0 10px #28a745, 0 0 20px #28a745; /* Glow effect */
+    color: white;
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(145deg, #28a745, #1e7e34); /* Gradient background */
+    border-radius: 50%; /* Circular shape */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), inset 0 -2px 4px rgba(255, 255, 255, 0.3); /* 3D effect */
+    text-shadow: 0 0 10px rgba(40, 167, 69, 0.8), 0 0 20px rgba(40, 167, 69, 0.6); /* Glow effect */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
+.viewed-status:hover {
+    transform: scale(1.1); /* Slight zoom on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), 0 0 15px rgba(40, 167, 69, 0.8); /* Enhanced glow */
+}
+
+.viewed-status span {
+    font-size: 16px;
+    color: white; /* Tick color */
+}
     </style>
   </head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -711,16 +728,17 @@ const chiefComplaints = (patient.complaints || [])
                 row.classList.add("green-highlight");
             }
 
-            // Render row
-           row.innerHTML = `
+            row.innerHTML = `
     <td>${patient.code || "N/A"}</td>
     <td>${patient.name || "N/A"}</td>
     <td>${patient.dob || "N/A"}</td>
     <td>${(patient.complaints || []).join(", ") || "N/A"}</td>
     <td>${patient.notes || "N/A"}</td>
-    <td>${patient.viewed ? "✔️" : ""}</td>
+    <td class="viewed-status">
+        ${patient.viewed ? '<div class="viewed-status"><span>✔️</span></div>' : ""}
+    </td>
     <td class="actions-cell">
-         <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
+        <button class="view-btn" onclick="viewPatientDetails('${patient.code}')">
             <i class="fas fa-eye" title="View Details"></i>
         </button>
         ${
