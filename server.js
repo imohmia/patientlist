@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
 const { Pool } = require('pg'); // PostgreSQL database integration
-
+const { spawn } = require('child_process');
 const app = express();
 
 // Middleware
@@ -96,6 +96,7 @@ app.get('/submissions', requireAuth, async (req, res) => {
             return {
                 ...submission,
                 canDelete: ['seyed', 'aldrin'].includes(req.session.username), // seyed and aldrin can delete
+                prediction: submission.prediction, // Include prediction in the response
             };
         });
         res.status(200).json(recentSubmissions);
@@ -195,12 +196,24 @@ app.post('/submit', async (req, res) => {
             'en'
         );
 
-        // Insert into the database
+        // Generate input text for AI prediction
+        const inputText = complaints.join(' ') || 'No complaints provided';
+        const age = dob ? new Date().getFullYear() - new Date(dob).getFullYear() : 0;
+
+        // Call the AI model for prediction
+        const predictionResponse = await axios.post(`http://localhost:${PORT}/predict`, {
+            input_text: inputText,
+            age: age,
+        });
+
+        const predictedLabel = predictionResponse.data.predicted_label;
+
+        // Insert into the database with prediction
         const query = `
             INSERT INTO patients (code, name, dob, pain_score, complaints, complaint_notes, notes,
                 allergies, allergy_explanation, medicine, medicine_explanation, chronic_condition,
-                chronic_condition_explanation, surgery, surgery_explanation, travel_history, travel_history_explanation)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+                chronic_condition_explanation, surgery, surgery_explanation, travel_history, travel_history_explanation, prediction)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
         `;
 
         await pool.query(query, [
@@ -221,6 +234,7 @@ app.post('/submit', async (req, res) => {
             translatedSurgeryExplanation,
             travelHistory,
             translatedTravelHistoryExplanation,
+            predictedLabel, // Add prediction here
         ]);
 
         res.status(200).json({ message: 'Patient submitted successfully!' });
@@ -294,6 +308,29 @@ app.post('/logout', (req, res) => {
             return res.status(500).json({ message: 'Logout failed.' });
         }
         res.redirect('/'); // Redirect to login page after logout
+    });
+});
+app.post('/predict', async (req, res) => {
+    const { input_text, age } = req.body;
+
+    // Spawn a Python process to call the inference script
+    const pythonProcess = spawn('python3', ['fine_tuned_clinicalbert/inference.py', input_text, age]);
+
+    let result = '';
+    pythonProcess.stdout.on('data', (data) => {
+        result += data.toString();
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+        console.error(`Error from Python script: ${data}`);
+    });
+
+    pythonProcess.on('close', (code) => {
+        if (code === 0) {
+            res.json({ predicted_label: parseInt(result.trim()) });
+        } else {
+            res.status(500).json({ error: 'Failed to process prediction' });
+        }
     });
 });
 
